@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1324">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HD Gallery">
+<meta name="description" content="HD Gallery – Hyper-Direct P2P Sharing. Kirim foto & video langsung HP ke HP, kualitas asli, tanpa server.">
+<title>HD Gallery — Hyper-Direct P2P Sharing</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='g' cx='36%25' cy='30%25' r='75%25'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='.45' stop-color='%23eef1f6'/%3E%3Cstop offset='.82' stop-color='%23cfd5de'/%3E%3Cstop offset='1' stop-color='%23aeb6c2'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='49' fill='url(%23g)'/%3E%3Cellipse cx='30' cy='24' rx='15' ry='7' fill='%23fff' opacity='.9' transform='rotate(-35 30 24)'/%3E%3Crect x='55' y='21' width='10' height='19' rx='5' fill='%23111318' transform='rotate(-25 60 30.5)'/%3E%3Crect x='75.75' y='17.5' width='8.5' height='18' rx='4.25' fill='%23111318' transform='rotate(-25 80 26.5)'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+:root{--bg:#0a1324;--bg2:#0d1830;--card:#121d33;--card2:#17243f;--line:#1f2c47;--cyan:#22d3ee;--blue:#3b82f6;--text:#e6edf7;--muted:#8a97ae;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--violet:#a78bfa}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(1200px 600px at 100% -10%,rgba(34,211,238,.07),transparent 60%),radial-gradient(900px 500px at -20% 10%,rgba(59,130,246,.06),transparent 60%),var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;-webkit-appearance:none;appearance:none}
+input{font:inherit}
+.hidden{display:none!important}
+.wrap{max-width:540px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 48px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.title{font-size:27px;font-weight:800;color:var(--cyan);letter-spacing:-.4px;line-height:1.08;text-shadow:0 0 22px rgba(34,211,238,.25)}
+.sub{color:var(--muted);font-size:13px;margin-top:3px;letter-spacing:.1px}
+.gear{flex:none;width:46px;height:46px;border-radius:15px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:#cbd5e1;transition:transform .15s,background .15s}
+.gear:active{transform:scale(.94);background:var(--card2)}
+.divider{height:1px;background:var(--line);margin:16px 0 4px}
+.mascot{flex:none;width:34px;height:34px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.45)) drop-shadow(0 0 6px rgba(34,211,238,.18));animation:float 5s ease-in-out infinite}
+.mascot svg{width:100%;height:100%;display:block;overflow:visible}
+.mascot .m-eye{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+@keyframes blink{0%,91%,97%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+.label{display:flex;align-items:center;gap:8px;color:#cbd5e1;font-weight:700;font-size:15px;margin:20px 2px 12px}
+.label svg{color:var(--cyan)}
+.label .grow{flex:1}
+.label small{color:var(--muted);font-weight:500;font-size:12.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.acard{position:relative;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:24px;padding:18px 16px 16px;min-height:156px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:3px;transition:transform .15s,border-color .15s;overflow:hidden;width:100%}
+.acard:active{transform:scale(.97)}
+.acard .ic{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:rgba(34,211,238,.13);color:var(--cyan);margin-bottom:auto;flex:none}
+.acard .ic.pink{background:rgba(244,114,182,.14);color:var(--pink)}
+.acard .ic.violet{background:rgba(167,139,250,.15);color:var(--violet)}
+.acard .ic.green{background:rgba(52,211,153,.14);color:var(--green)}
+.acard .nm{font-weight:800;font-size:17px;line-height:1.2;margin-top:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acard .ct{color:var(--muted);font-size:13px}
+.acard .live{position:absolute;top:16px;right:14px;font-size:11px;font-weight:700;color:var(--cyan);background:rgba(34,211,238,.12);padding:4px 8px;border-radius:99px}
+.acard .thumbs{position:absolute;top:18px;right:14px;display:flex}
+.acard .thumbs span{width:30px;height:30px;border-radius:9px;background:#0b1428 center/cover no-repeat;border:2px solid var(--card2);margin-left:-10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px}
+.row{display:flex;align-items:center;gap:10px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px;line-height:1.5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 18px;border-radius:15px;font-weight:700;font-size:15px;transition:transform .12s,opacity .12s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04121f;box-shadow:0 8px 24px -10px rgba(34,211,238,.6)}
+.btn.ghost{background:var(--card2);border:1px solid var(--line);color:#dbe4f0}
+.btn.danger{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#fecaca}
+.btn.sm{height:38px;padding:0 13px;font-size:13.5px;border-radius:12px}
+.btn.block{width:100%}
+.field{width:100%;height:50px;border-radius:15px;background:#0b1529;border:1px solid var(--line);color:var(--text);padding:0 16px;font-size:16px;outline:none}
+.field:focus{border-color:rgba(34,211,238,.6)}
+.code-in{text-transform:uppercase;letter-spacing:6px;font-weight:800;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;font-size:20px}
+.help{margin-top:14px;color:var(--muted);font-size:12.5px;line-height:1.55}
+.help b{color:#cbd5e1}
+.steps{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.steps li{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.45;color:#cbd5e1}
+.steps .n{flex:none;width:26px;height:26px;border-radius:50%;background:rgba(34,211,238,.14);color:var(--cyan);font-weight:800;font-size:13px;display:grid;place-items:center}
+.roombar{margin-top:18px}
+.rb-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rlabel{font-size:11px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
+.rcode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:28px;font-weight:800;letter-spacing:5px;color:#fff;margin-top:2px}
+.pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;padding:7px 11px;border-radius:99px;background:rgba(148,163,184,.12);color:#cbd5e1;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill i{flex:none;width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill span{overflow:hidden;text-overflow:ellipsis}
+.pill.ok{background:rgba(52,211,153,.13);color:var(--green)}
+.pill.wait{background:rgba(34,211,238,.12);color:var(--cyan)}
+.pill.warn{background:rgba(251,191,36,.13);color:var(--amber)}
+.pill.bad{background:rgba(248,113,113,.13);color:var(--red)}
+.pill.wait i,.pill.warn i{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+.rb-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.rb-hint{margin-top:10px}
+.pick{position:relative;margin-top:14px;display:flex;align-items:center;gap:14px;width:100%;padding:16px;border-radius:22px;border:1.5px dashed rgba(34,211,238,.45);background:rgba(34,211,238,.06);cursor:pointer;transition:transform .12s}
+.pick:active{transform:scale(.98)}
+.pick .ic{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:grid;place-items:center;color:#04121f;flex:none}
+.pick b{display:block;font-size:16px}
+.pick span{font-size:12.5px;color:var(--muted)}
+.pick input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.tx{display:grid;gap:8px}
+.tx-row{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px 13px}
+.tx-row .t1{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600}
+.tx-row .t1 .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-row .t1 .dir{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:rgba(34,211,238,.14);color:var(--cyan)}
+.tx-row .t1 .dir.down{background:rgba(244,114,182,.14);color:var(--pink)}
+.tx-row .t2{font-size:11.5px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;gap:8px}
+.bar{height:6px;border-radius:99px;background:#0b1529;overflow:hidden;margin-top:7px}
+.bar > div{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--blue));transition:width .15s}
+.tx-row.done .bar>div{background:var(--green)}
+.tx-row.fail .bar>div{background:var(--red)}
+.av-head{display:flex;align-items:center;gap:10px;margin:20px 0 12px}
+.back{width:42px;height:42px;border-radius:13px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.av-title{flex:1;min-width:0}
+.av-title b{display:block;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av-title span{font-size:12.5px;color:var(--muted)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tile{position:relative;aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#0b1529;border:1px solid var(--line);padding:0}
+.tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;background:#0b1529}
+.tile .badge{position:absolute;left:6px;bottom:6px;font-size:10.5px;font-weight:700;background:rgba(2,6,23,.72);color:#fff;padding:3px 6px;border-radius:7px}
+.tile .ok{position:absolute;right:6px;bottom:6px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgba(2,6,23,.72);color:var(--cyan);font-size:11px;font-weight:900}
+.tile.loading{display:grid;place-items:center;text-align:center;padding:8px}
+.ring{width:46px;height:46px}
+.ring circle{fill:none;stroke-width:5}
+.ring .bg{stroke:#1e2a44}.ring .fg{stroke:var(--cyan);stroke-linecap:round;transition:stroke-dashoffset .15s;transform:rotate(-90deg);transform-origin:center}
+.tile.loading .fn{font-size:10px;color:var(--muted);margin-top:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{grid-column:1/-1;text-align:center;padding:34px 16px;color:var(--muted);font-size:13.5px;line-height:1.55;background:var(--card);border:1px dashed var(--line);border-radius:20px}
+.viewer{position:fixed;inset:0;z-index:50;background:rgba(2,5,14,.97);display:flex;flex-direction:column;animation:fade .18s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.v-top{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px}
+.v-top .meta{flex:1;min-width:0}
+.v-top .meta b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v-top .meta span{font-size:12px;color:var(--muted)}
+.iconbtn{width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:none}
+.v-stage{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;touch-action:pan-y}
+.v-stage img,.v-stage video{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.v-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border-radius:14px;background:rgba(255,255,255,.07);display:grid;place-items:center}
+.v-nav.prev{left:8px}.v-nav.next{right:8px}
+.v-bottom{display:flex;gap:10px;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px)}
+.v-bottom .btn{flex:1}
+.v-note{text-align:center;font-size:11.5px;color:var(--muted);padding:0 16px 4px}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(2,6,18,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;animation:fade .15s ease}
+.sheet{width:100%;max-width:540px;background:var(--bg2);border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;padding:10px 18px calc(env(safe-area-inset-bottom) + 20px);max-height:92vh;overflow:auto;animation:up .22s cubic-bezier(.2,.9,.3,1)}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.grab{width:42px;height:5px;border-radius:9px;background:#334155;margin:0 auto 12px}
+.sheet h3{margin:4px 0 14px;font-size:19px}
+.set-item{padding:14px 0;border-top:1px solid var(--line)}
+.set-item .k{font-weight:700;font-size:14.5px}
+.set-item .d{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.switch{position:relative;width:52px;height:32px;flex:none;border-radius:99px;background:#334155;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch.on{background:var(--cyan)}.switch.on::after{transform:translateX(20px)}
+.qrbox{background:#fff;border-radius:20px;padding:14px;width:min(78vw,300px);margin:6px auto 12px}
+.qrbox svg{width:100%;height:auto;display:block}
+.linkbox{font-size:12.5px;color:#cbd5e1;background:#0b1529;border:1px solid var(--line);border-radius:12px;padding:10px 12px;word-break:break-all;text-align:center}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);transform:translateX(-50%) translateY(-20px);opacity:0;z-index:80;background:#e6edf7;color:#0a1324;font-weight:700;font-size:13.5px;padding:11px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:all .25s;max-width:88vw;text-align:center;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (min-width:700px){.grid3{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="mascot" aria-hidden="true">
+        <svg viewBox="0 0 100 100" focusable="false">
+          <defs>
+            <radialGradient id="mg1" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#eef1f6"/><stop offset=".82" stop-color="#cfd5de"/><stop offset="1" stop-color="#aeb6c2"/></radialGradient>
+            <clipPath id="mc1"><circle cx="50" cy="50" r="47.5"/></clipPath>
+          </defs>
+          <circle cx="50" cy="50" r="49" fill="url(#mg1)"/>
+          <circle cx="50" cy="50" r="48.4" fill="none" stroke="rgba(15,23,42,.12)" stroke-width="1.2"/>
+          <ellipse cx="30" cy="24" rx="15" ry="7" fill="#fff" opacity=".9" transform="rotate(-35 30 24)"/>
+          <g clip-path="url(#mc1)">
+            <ellipse cx="53" cy="47" rx="6" ry="3.2" fill="#ff8fb1" opacity=".5" transform="rotate(-25 53 47)"/>
+            <ellipse cx="86" cy="42" rx="5" ry="2.8" fill="#ff8fb1" opacity=".5" transform="rotate(-25 86 42)"/>
+            <g transform="rotate(-25 60 30.5)"><rect class="m-eye" x="55" y="21" width="10" height="19" rx="5" fill="#111318"/></g>
+            <g transform="rotate(-25 80 26.5)"><rect class="m-eye" x="75.75" y="17.5" width="8.5" height="18" rx="4.25" fill="#111318"/></g>
+          </g>
+        </svg>
+      </div>
+      <div style="min-width:0">
+        <div class="title">Hyper Direct</div>
+        <div class="sub">HD Gallery · P2P Sharing</div>
+      </div>
+    </div>
+    <button class="gear" id="gearBtn" aria-label="Pengaturan">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+  <div class="divider"></div>
+
+  <main id="home">
+    <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>Mulai berbagi</div>
+    <div class="grid2">
+      <button class="acard" id="createBtn">
+        <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        <div class="nm">Buat Room</div><div class="ct">Room baru + kode</div>
+      </button>
+      <button class="acard" id="joinCardBtn">
+        <div class="ic pink"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg></div>
+        <div class="nm">Gabung Room</div><div class="ct">Pakai kode teman</div>
+      </button>
+    </div>
+    <div class="card hidden" id="joinBox" style="margin-top:14px">
+      <div class="small muted" style="margin-bottom:8px">Masukkan kode room dari temanmu</div>
+      <div class="row">
+        <input class="field code-in" id="codeIn" maxlength="6" placeholder="ABC123" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button class="btn primary" id="joinBtn">Gabung</button>
+      </div>
+    </div>
+    <button class="acard hidden" id="resumeBtn" style="margin-top:14px;min-height:0;flex-direction:row;align-items:center;gap:14px">
+      <div class="ic green" style="margin:0;width:46px;height:46px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div>
+      <div style="min-width:0"><div class="nm" style="margin:0;font-size:15.5px">Lanjutkan room <span id="resumeCode"></span></div><div class="ct">Kembali ke room terakhir</div></div>
+    </button>
+
+    <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/></svg>Nama kamu <small>(opsional)</small></div>
+    <input class="field" id="nameIn" maxlength="24" placeholder="mis. Edhy" autocomplete="nickname">
+    <div class="help">Nama ini muncul di HP temanmu, mis. album <b>“Foto Edhy”</b>.</div>
+
+    <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>Cara pakai</div>
+    <div class="card">
+      <ol class="steps">
+        <li><span class="n">1</span><span>Tap <b>Buat Room</b>, lalu kirim link / tunjukkan QR ke temanmu.</span></li>
+        <li><span class="n">2</span><span>Temanmu buka link (atau scan QR / ketik kode). Status jadi <b style="color:var(--green)">Terhubung</b>.</span></li>
+        <li><span class="n">3</span><span>Masing-masing tap <b>Pilih Foto / Video</b>. Foto langsung muncul di HP satunya — tap foto lalu <b>Simpan</b>.</span></li>
+      </ol>
+      <div class="help">🔒 File dikirim <b>langsung HP ke HP</b> (P2P, terenkripsi), kualitas asli, <b>tidak disimpan di server</b>. Browser <b>tidak bisa</b> membuka galeri HP secara otomatis — kamu sendiri yang memilih foto mana yang dibagikan. Kedua HP harus tetap membuka halaman ini selama kirim-kiriman.</div>
+    </div>
+  </main>
+
+  <main id="room" class="hidden">
+    <div class="card roombar">
+      <div class="rb-top">
+        <div><div class="rlabel">KODE ROOM</div><div class="rcode" id="roomCode">------</div></div>
+        <span class="pill wait" id="statusPill"><i></i><span id="statusText">Menghubungkan…</span></span>
+      </div>
+      <div class="rb-actions">
+        <button class="btn ghost sm" id="copyBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Salin</button>
+        <button class="btn ghost sm" id="qrBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h3M21 17v4h-4"/></svg>QR</button>
+        <button class="btn ghost sm" id="shareBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>Bagikan</button>
+      </div>
+      <div class="small muted rb-hint" id="statusHint"></div>
+    </div>
+
+    <label class="pick" id="pickLabel">
+      <input type="file" id="fileIn" accept="image/*,video/*" multiple>
+      <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div><b>Pilih Foto / Video</b><span>Dari galeri HP kamu · dikirim kualitas asli</span></div>
+    </label>
+    <div class="help" style="margin-top:8px">ℹ️ Browser tidak bisa membaca galeri otomatis — hanya file yang kamu pilih yang dibagikan. Di iPhone, kalau ada pilihan ukuran, pilih <b>“Ukuran Asli / Actual Size”</b>.</div>
+
+    <div id="txSec" class="hidden">
+      <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l-4-4 4-4"/><path d="M3 13h13"/><path d="M17 7l4 4-4 4"/></svg>Transfer<span class="grow"></span><small id="txSum"></small></div>
+      <div class="tx" id="txList"></div>
+    </div>
+
+    <section id="albumsSec">
+      <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>Album<span class="grow"></span><small id="albumSum"></small></div>
+      <div class="grid2" id="albums"></div>
+    </section>
+
+    <section id="albumView" class="hidden">
+      <div class="av-head">
+        <button class="back" id="backBtn" aria-label="Kembali"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="av-title"><b id="avTitle">Album</b><span id="avCount"></span></div>
+        <button class="btn ghost sm hidden" id="saveAllBtn">Simpan semua</button>
+      </div>
+      <div class="grid3" id="grid"></div>
+    </section>
+  </main>
+</div>
+
+<div class="viewer hidden" id="viewer">
+  <div class="v-top">
+    <button class="iconbtn" id="vClose" aria-label="Tutup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <div class="meta"><b id="vName"></b><span id="vInfo"></span></div>
+    <span class="small muted" id="vPos"></span>
+  </div>
+  <div class="v-stage" id="vStage"></div>
+  <div class="v-note" id="vNote"></div>
+  <div class="v-bottom">
+    <button class="btn danger hidden" id="vRemove"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Stop bagikan</button>
+    <button class="btn primary" id="vSave"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Simpan</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+'use strict';
+// ---------------- Konfigurasi ----------------
+const APP = 'hdgallery-v1';
+const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const CHUNK = 64 * 1024;          // potongan 64 KB (termasuk header 4 byte)
+const SLAB = 1024 * 1024;         // baca file per 1 MB lalu dipotong 64 KB
+const HIGH = 1024 * 1024;         // backpressure: tunggu kalau bufferedAmount > 1 MB
+const LOW = 256 * 1024;           // lanjut kirim saat turun ke 256 KB
+const ICE = [
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
+  // cadangan relay publik PeerJS (data tetap terenkripsi DTLS end-to-end)
+  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' }
+];
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const rand = (n, a = 'abcdefghijkmnpqrstuvwxyz23456789') => Array.from(crypto.getRandomValues(new Uint8Array(n)), (x) => a[x % a.length]).join('');
+const fmtSize = (b) => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(0) + ' KB' : b < 1073741824 ? (b / 1048576).toFixed(1) + ' MB' : (b / 1073741824).toFixed(2) + ' GB';
+const isVideo = (it) => /^video\//.test(it.type || '') || /\.(mp4|mov|m4v|webm|3gp|mkv)$/i.test(it.name || '');
+const ls = { get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+const cssq = (s) => (window.CSS && CSS.escape) ? CSS.escape(s) : String(s).replace(/"/g, '\\"');
+
+// ---------------- State ----------------
+const S = {
+  uid: ls.get('hd.uid', null) || (() => { const u = rand(10); ls.set('hd.uid', u); return u; })(),
+  name: ls.get('hd.name', ''),
+  cache: ls.get('hd.cache', true),
+  names: ls.get('hd.names', {}),
+  room: null, peer: null, mode: null, isHost: false,
+  conns: new Map(), items: new Map(), incoming: new Map(), tx: new Map(),
+  tomb: new Set(), tidSeq: 0,
+  album: null, viewList: [], viewIdx: -1,
+  failCount: 0, retryT: null, backoff: 1500, wake: null, everConnected: false
+};
+const hostId = (code) => `${APP}-${code}`;
+
+// ---------------- IndexedDB cache (reload tidak menghilangkan foto) ----------------
+const DB = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => {
+      if (!window.indexedDB) return rej(new Error('no idb'));
+      const r = indexedDB.open('hd-gallery', 1);
+      r.onupgradeneeded = () => { const s = r.result.createObjectStore('items', { keyPath: 'k' }); s.createIndex('room', 'room'); };
+      r.onsuccess = () => { this.db = r.result; res(this.db); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async run(mode, fn) { const db = await this.open(); return new Promise((res, rej) => { const t = db.transaction('items', mode); const out = fn(t.objectStore('items')); t.oncomplete = () => res(out && out.result); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
+  put(room, it) { if (!S.cache) return Promise.resolve(); return this.run('readwrite', (s) => s.put({ k: room + ':' + it.id, room, id: it.id, owner: it.owner, name: it.name, type: it.type, size: it.size, ts: it.ts, blob: it.blob })).catch((e) => { console.warn('cache put', e); toast('Penyimpanan lokal penuh — foto tetap tampil selama halaman terbuka'); }); },
+  del(room, id) { return this.run('readwrite', (s) => s.delete(room + ':' + id)).catch(() => {}); },
+  list(room) { return this.run('readonly', (s) => s.index('room').getAll(room)).catch(() => []); },
+  async clearRoom(room) { const all = (await this.list(room)) || []; return this.run('readwrite', (s) => { all.forEach((r) => s.delete(r.k)); }).catch(() => {}); }
+};
+
+// ---------------- UI helpers ----------------
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+function ownerName(uid) { return uid === S.uid ? 'Saya' : (S.names[uid] || 'Teman'); }
+function albumTitle(uid) { return uid === S.uid ? 'Foto Saya' : (S.names[uid] ? 'Foto ' + S.names[uid] : 'Foto Teman'); }
+function shareUrl() { return location.origin + location.pathname + '?room=' + S.room; }
+function openConns() { return [...S.conns.values()].filter((c) => c.open && c.uid); }
+
+function setStatus(kind, text, hint = '') {
+  $('#statusPill').className = 'pill ' + kind;
+  $('#statusText').textContent = text;
+  $('#statusHint').textContent = hint;
+  $('#statusHint').classList.toggle('hidden', !hint);
+}
+function refreshStatus() {
+  if (!S.room) return;
+  const cs = openConns();
+  if (!navigator.onLine) return setStatus('bad', 'Offline', 'HP sedang offline. Akan tersambung lagi otomatis saat internet kembali.');
+  if (cs.length) {
+    const names = cs.map((c) => S.names[c.uid] || 'Teman');
+    return setStatus('ok', 'Terhubung · ' + (names.length > 2 ? names.length + ' orang' : names.join(', ')));
+  }
+  if (typeof Peer === 'undefined') return setStatus('bad', 'Gagal memuat PeerJS', 'Cek koneksi internet lalu muat ulang halaman.');
+  if (!S.peer || S.peer.disconnected || !S.peer.open) return setStatus('warn', S.everConnected ? 'Terputus · menyambung lagi…' : 'Menghubungkan…');
+  if (S.failCount >= 2) return setStatus('bad', 'Gagal tersambung langsung', 'Jaringan mungkin memblokir koneksi P2P. Coba Wi-Fi yang sama, matikan VPN / mode hemat data, lalu buka ulang link.');
+  if (S.isHost) return setStatus('wait', S.everConnected ? 'Teman terputus · menunggu…' : 'Menunggu teman…', S.everConnected ? 'Foto yang sudah diterima tetap ada. Minta temanmu buka lagi link-nya.' : 'Kirim link / QR ke temanmu. Biarkan halaman ini tetap terbuka.');
+  return setStatus('warn', 'Mencari teman di room…');
+}
+
+// ---------------- Render ----------------
+const ICONS = {
+  me: '<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/></svg>',
+  friend: '<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+};
+function albumOwners() {
+  const owners = new Set();
+  for (const it of S.items.values()) owners.add(it.owner);
+  for (const inc of S.incoming.values()) owners.add(inc.owner);
+  for (const c of openConns()) owners.add(c.uid);
+  owners.delete(S.uid);
+  const friends = [...owners];
+  return [S.uid, ...(friends.length ? friends : ['__friend'])];
+}
+function countText(items) { const v = items.filter(isVideo).length, f = items.length - v; return v ? `${f} foto · ${v} video` : `${f} foto`; }
+function itemsOf(uid) { return [...S.items.values()].filter((i) => i.owner === uid).sort((a, b) => b.ts - a.ts); }
+function renderAlbums() {
+  let total = 0;
+  $('#albums').innerHTML = albumOwners().map((uid, i) => {
+    const its = uid === '__friend' ? [] : itemsOf(uid);
+    total += its.length;
+    const inc = [...S.incoming.values()].filter((x) => x.owner === uid).length;
+    const color = uid === S.uid ? '' : ['pink', 'violet', 'green'][(i - 1) % 3];
+    const thumbs = its.filter((x) => !isVideo(x)).slice(0, 3).reverse().map((x) => `<span style="background-image:url('${x.url}')"></span>`).join('');
+    const right = inc ? `<span class="live">↓ ${inc}</span>` : (thumbs ? `<div class="thumbs">${thumbs}</div>` : '');
+    const title = uid === '__friend' ? 'Foto Teman' : albumTitle(uid);
+    return `<button class="acard" data-album="${esc(uid)}">${right}<div class="ic ${color}">${uid === S.uid ? ICONS.me : ICONS.friend}</div><div class="nm">${esc(title)}</div><div class="ct">${countText(its)}</div></button>`;
+  }).join('');
+  $('#albumSum').textContent = total ? `${total} file · ${fmtSize([...S.items.values()].reduce((a, b) => a + b.size, 0))}` : '';
+}
+function ringSvg(p) { const r = 19, c = 2 * Math.PI * r; return `<svg class="ring" viewBox="0 0 46 46"><circle class="bg" cx="23" cy="23" r="${r}"/><circle class="fg" cx="23" cy="23" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p)}"/></svg>`; }
+function renderGrid() {
+  const uid = S.album; if (uid == null) return;
+  const its = uid === '__friend' ? [] : itemsOf(uid);
+  const inc = [...S.incoming.values()].filter((x) => x.owner === uid);
+  $('#avTitle').textContent = uid === '__friend' ? 'Foto Teman' : albumTitle(uid);
+  $('#avCount').textContent = countText(its) + (its.length ? ' · ' + fmtSize(its.reduce((a, b) => a + b.size, 0)) : '') + (inc.length ? ` · menerima ${inc.length}` : '');
+  $('#saveAllBtn').classList.toggle('hidden', uid === S.uid || its.length < 2);
+  const g = $('#grid');
+  if (!its.length && !inc.length) {
+    g.innerHTML = `<div class="empty">${uid === S.uid ? 'Belum ada foto yang kamu bagikan.<br>Tap <b>Pilih Foto / Video</b> di atas.' : 'Belum ada foto dari teman.<br>Minta temanmu tap <b>Pilih Foto / Video</b> di HP-nya.'}</div>`;
+    return;
+  }
+  // update tile seperlunya supaya gambar tidak berkedip
+  const want = [...inc.map((x) => 'inc:' + x.id), ...its.map((x) => 'it:' + x.id)];
+  const wantSet = new Set(want);
+  const existing = new Map();
+  [...g.children].forEach((e) => { if (e.dataset.key && wantSet.has(e.dataset.key)) existing.set(e.dataset.key, e); else e.remove(); });
+  let prev = null;
+  for (const key of want) {
+    let el = existing.get(key);
+    if (!el) {
+      el = document.createElement('button');
+      el.className = 'tile'; el.dataset.key = key;
+      const id = key.slice(key.indexOf(':') + 1);
+      if (key.startsWith('inc:')) {
+        const x = S.incoming.get(id); const p = x.size ? x.got / x.size : 0;
+        el.classList.add('loading');
+        el.innerHTML = `<div><div data-ring="${esc(id)}">${ringSvg(p)}</div><div class="fn">${esc(x.name)}</div><div class="fn" data-pct="${esc(id)}">${Math.floor(p * 100)}%</div></div>`;
+      } else {
+        const it = S.items.get(id);
+        el.dataset.id = id;
+        el.innerHTML = isVideo(it)
+          ? `<video src="${it.url}#t=0.001" muted playsinline preload="metadata"></video><span class="badge">▶ ${fmtSize(it.size)}</span>`
+          : `<img src="${it.url}" alt="" decoding="async"><span class="badge">${fmtSize(it.size)}</span>`;
+        if (it.owner === S.uid) el.insertAdjacentHTML('beforeend', `<span class="ok ${it.delivered.size ? '' : 'hidden'}" data-ok="${esc(id)}" title="Sudah diterima teman">✓</span>`);
+      }
+    }
+    const ref = prev ? prev.nextSibling : g.firstChild;
+    if (ref !== el) g.insertBefore(el, ref);
+    prev = el;
+  }
+}
+let renderQ = false;
+function render() { if (renderQ) return; renderQ = true; requestAnimationFrame(() => { renderQ = false; renderAlbums(); if (S.album != null) renderGrid(); refreshStatus(); }); }
+function openAlbum(uid) { S.album = uid; $('#albumsSec').classList.add('hidden'); $('#albumView').classList.remove('hidden'); $('#grid').innerHTML = ''; renderGrid(); }
+function closeAlbum() { S.album = null; $('#albumView').classList.add('hidden'); $('#albumsSec').classList.remove('hidden'); render(); }
+
+// transfer rows
+function tset(key, row) { S.tx.set(key, { ...row, done: 0, t0: performance.now(), state: 'run' }); renderTx(); }
+function tprog(key, done) { const r = S.tx.get(key); if (r) { r.done = done; scheduleTx(); } }
+function tend(key, ok) { const r = S.tx.get(key); if (!r) return; r.state = ok ? 'done' : 'fail'; if (ok) r.done = r.size; renderTx(); setTimeout(() => { if (S.tx.get(key) === r) { S.tx.delete(key); renderTx(); } }, ok ? 2000 : 3500); }
+let txQ = 0;
+function scheduleTx() { if (txQ) return; txQ = setTimeout(() => { txQ = 0; renderTx(); }, 120); }
+function renderTx() {
+  const rows = [...S.tx.entries()];
+  $('#txSec').classList.toggle('hidden', !rows.length);
+  const list = $('#txList');
+  if (!rows.length) { list.innerHTML = ''; return; }
+  const run = rows.filter(([, r]) => r.state === 'run').length;
+  $('#txSum').textContent = run ? `${run} berjalan` : 'selesai';
+  const keys = new Set(rows.map(([k]) => k));
+  const els = new Map();
+  [...list.children].forEach((e) => { if (keys.has(e.dataset.key)) els.set(e.dataset.key, e); else e.remove(); });
+  for (const [key, r] of rows) {
+    let el = els.get(key);
+    if (!el) {
+      el = document.createElement('div'); el.dataset.key = key;
+      el.innerHTML = `<div class="t1"><span class="dir ${r.dir === 'down' ? 'down' : ''}">${r.dir === 'down' ? '↓' : '↑'}</span><span class="nm"></span><span class="pct"></span></div><div class="bar"><div></div></div><div class="t2"><span class="a"></span><span class="b"></span></div>`;
+      list.appendChild(el);
+    }
+    const p = r.size ? r.done / r.size : 1;
+    const secs = (performance.now() - r.t0) / 1000;
+    const speed = secs > 0.3 ? r.done / secs : 0;
+    el.className = 'tx-row ' + (r.state === 'done' ? 'done' : r.state === 'fail' ? 'fail' : '');
+    $('.nm', el).textContent = r.name;
+    $('.pct', el).textContent = r.state === 'fail' ? 'gagal' : r.state === 'done' ? '✓' : Math.floor(p * 100) + '%';
+    $('.bar>div', el).style.width = (p * 100).toFixed(1) + '%';
+    $('.a', el).textContent = `${fmtSize(r.done)} / ${fmtSize(r.size)}`;
+    $('.b', el).textContent = r.state === 'fail' ? 'dicoba lagi saat tersambung' : (r.dir === 'down' ? 'dari ' : 'ke ') + (r.who || 'teman') + (speed && r.state === 'run' ? ' · ' + fmtSize(speed) + '/s' : '');
+  }
+}
+function updateIncomingUI(id) {
+  const x = S.incoming.get(id); if (!x) return;
+  const p = x.size ? x.got / x.size : 0;
+  const ring = document.querySelector(`[data-ring="${cssq(id)}"] .fg`);
+  if (ring) ring.setAttribute('stroke-dashoffset', 2 * Math.PI * 19 * (1 - p));
+  const pct = document.querySelector(`[data-pct="${cssq(id)}"]`);
+  if (pct) pct.textContent = Math.floor(p * 100) + '%';
+}
+
+// ---------------- Items ----------------
+function addItem(it, persist = true) {
+  if (S.items.has(it.id)) return S.items.get(it.id);
+  it.url = URL.createObjectURL(it.blob);
+  it.delivered = it.delivered || new Set();
+  S.items.set(it.id, it);
+  if (persist && S.room) DB.put(S.room, it);
+  render();
+  return it;
+}
+function deleteItem(id) {
+  const it = S.items.get(id); if (!it) return;
+  S.items.delete(id);
+  setTimeout(() => URL.revokeObjectURL(it.url), 1500);
+  if (S.room) DB.del(S.room, id);
+  if (!$('#viewer').classList.contains('hidden')) {
+    const idx = S.viewList.indexOf(id);
+    if (idx >= 0) { S.viewList.splice(idx, 1); if (!S.viewList.length) closeViewer(); else showView(Math.min(idx, S.viewList.length - 1)); }
+  }
+  render();
+}
+const meta = (it) => ({ id: it.id, name: it.name, type: it.type, size: it.size, ts: it.ts });
+function onPick(files) {
+  if (!files.length) return;
+  const metas = [];
+  const now = Date.now();
+  files.forEach((f, i) => {
+    const it = addItem({ id: S.uid + '-' + rand(10), owner: S.uid, name: f.name || `foto-${now + i}.jpg`, type: f.type || '', size: f.size, ts: now + i, blob: f });
+    metas.push(meta(it));
+  });
+  toast(`${files.length} file siap dibagikan` + (openConns().length ? '' : ' — terkirim saat teman tersambung'));
+  if (S.album == null) openAlbum(S.uid); else if (S.album === S.uid) renderGrid();
+  for (const c of openConns()) sendJ(c, { t: 'offer', items: metas });
+}
+function removeMine(id) {
+  const it = S.items.get(id); if (!it || it.owner !== S.uid) return;   // hanya pemilik
+  S.tomb.add(id); ls.set('hd.tomb.' + S.room, [...S.tomb].slice(-1000));
+  for (const c of S.conns.values()) {
+    if (c.cur && c.cur.id === id) c.cur.abort = true;
+    c.queue = c.queue.filter((q) => q !== id);
+    if (c.open) sendJ(c, { t: 'remove', id });
+  }
+  deleteItem(id);
+  toast('Dihapus dari berbagi');
+}
+
+// ---------------- Jaringan: PeerJS signaling + WebRTC DataChannel (raw) ----------------
+function clearRetry() { clearTimeout(S.retryT); S.retryT = null; }
+function retry(fn, ms) { clearRetry(); S.retryT = setTimeout(() => { S.retryT = null; fn(); }, ms ?? S.backoff); S.backoff = Math.min(S.backoff * 1.6, 12000); }
+function destroyPeer() {
+  clearRetry();
+  for (const c of [...S.conns.values()]) { try { c.conn.close(); } catch {} onClose(c, true); }
+  S.conns.clear();
+  if (S.peer) { const p = S.peer; S.peer = null; try { p.destroy(); } catch {} }
+}
+function startPeer(mode) {
+  if (!S.room) return;
+  if (typeof Peer === 'undefined') { refreshStatus(); return; }
+  destroyPeer();
+  const code = S.room;
+  // yang pertama masuk memegang ID "host" room; berikutnya jadi tamu & menyambung ke host
+  const id = mode === 'host' ? hostId(code) : hostId(code) + '-' + rand(8);
+  const p = new Peer(id, { config: { iceServers: ICE }, debug: 0 });
+  S.peer = p; S.mode = mode; S.isHost = false;
+  refreshStatus();
+  p.on('open', () => {
+    if (S.peer !== p) return;
+    S.isHost = mode === 'host'; S.backoff = 1500;
+    if (!S.isHost) connectTo(hostId(code));
+    refreshStatus();
+  });
+  p.on('connection', (conn) => { if (S.peer === p) setupConn(conn); });
+  p.on('disconnected', () => {
+    if (S.peer !== p || p.destroyed) return;
+    refreshStatus();
+    retry(() => { if (S.peer === p && !p.destroyed && p.disconnected) { try { p.reconnect(); } catch { startPeer('host'); } } });
+  });
+  p.on('error', (err) => {
+    if (S.peer !== p) return;
+    const t = err && err.type;
+    if (t !== 'unavailable-id') console.warn('peer error', t, err && err.message);
+    if (t === 'unavailable-id' && mode === 'host') { startPeer('guest'); return; }
+    if (t === 'peer-unavailable') {
+      // host sudah tidak ada → ambil alih jadi host, teman lain akan menyambung ke kita
+      if (!S.isHost && !openConns().length) retry(() => startPeer('host'), 600 + Math.random() * 900);
+      return;
+    }
+    if (t === 'browser-incompatible') { setStatus('bad', 'Browser tidak mendukung WebRTC', 'Pakai Safari / Chrome versi terbaru.'); return; }
+    if (t === 'webrtc') { S.failCount++; refreshStatus(); return; }
+    if (t === 'disconnected') return;
+    refreshStatus();
+    retry(() => startPeer('host'));
+  });
+}
+function connectTo(pid) {
+  if (!S.peer || S.peer.destroyed || !S.peer.open || pid === S.peer.id) return;
+  for (const c of S.conns.values()) if (c.peerId === pid && (c.open || c.pending)) return;
+  const conn = S.peer.connect(pid, { reliable: true, serialization: 'raw' });
+  if (conn) setupConn(conn);
+}
+function setupConn(conn) {
+  const C = { conn, peerId: conn.peer, open: false, pending: true, uid: null, queue: [], rx: new Map(), wanted: new Set(), cur: null, pumping: false, lastSeen: Date.now() };
+  S.conns.set(conn.connectionId, C);
+  const openTimer = setTimeout(() => { if (!C.open && !C.closed) { S.failCount++; try { conn.close(); } catch {} onClose(C); } }, 20000);
+  conn.on('open', () => {
+    clearTimeout(openTimer);
+    C.open = true; C.pending = false; C.lastSeen = Date.now();
+    const dc = conn.dataChannel;
+    if (dc) dc.bufferedAmountLowThreshold = LOW;
+    sendJ(C, { t: 'hello', uid: S.uid, name: S.name, v: 1 });
+    if (S.isHost) {
+      const others = [...S.conns.values()].filter((x) => x !== C && x.open).map((x) => x.peerId);
+      if (others.length) sendJ(C, { t: 'peers', ids: others });
+    }
+  });
+  conn.on('data', (d) => onData(C, d));
+  conn.on('close', () => { clearTimeout(openTimer); onClose(C); });
+  conn.on('error', (e) => console.warn('conn error', e && e.type, e && e.message));
+  try {
+    const pc = conn.peerConnection;
+    if (pc) pc.addEventListener('iceconnectionstatechange', () => { if (pc.iceConnectionState === 'failed') { S.failCount++; try { conn.close(); } catch {} onClose(C); } });
+  } catch {}
+}
+function onClose(C, silent) {
+  if (C.closed) return; C.closed = true;
+  const was = C.open; C.open = false; C.pending = false;
+  for (const [k, c] of S.conns) if (c === C) S.conns.delete(k);
+  for (const rx of C.rx.values()) { S.incoming.delete(rx.id); tend(rx.key, false); }
+  C.rx.clear();
+  if (C.cur) C.cur.abort = true;
+  if (silent) return;
+  if (was && C.uid && !openConns().some((o) => o.uid === C.uid)) toast((S.names[C.uid] || 'Teman') + ' terputus');
+  render();
+  // tamu: sambung ulang ke host
+  if (S.room && S.peer && !S.peer.destroyed && !S.isHost && C.peerId === hostId(S.room)) retry(() => connectTo(hostId(S.room)), 1200);
+}
+function tx(C, data) { const dc = C.conn.dataChannel; if (!dc || dc.readyState !== 'open') return false; try { dc.send(data); return true; } catch (e) { console.warn('send', e); return false; } }
+function sendJ(C, o) { return tx(C, JSON.stringify(o)); }
+
+function onData(C, d) {
+  C.lastSeen = Date.now();
+  if (typeof d !== 'string') return onChunk(C, d);
+  let m; try { m = JSON.parse(d); } catch { return; }
+  switch (m.t) {
+    case 'hello': {
+      if (m.uid === S.uid) { toast('Room ini sudah terbuka di tab lain di perangkat ini'); try { C.conn.close(); } catch {} return; }
+      for (const o of [...S.conns.values()]) if (o !== C && o.uid === m.uid) { try { o.conn.close(); } catch {} onClose(o, true); }
+      const first = !C.uid; C.uid = String(m.uid);
+      if (m.name) { S.names[C.uid] = String(m.name).slice(0, 24); ls.set('hd.names', S.names); }
+      S.everConnected = true; S.failCount = 0; S.backoff = 1500; clearRetry();
+      if (first) { toast((S.names[C.uid] || 'Teman') + ' terhubung 🎉'); if (navigator.vibrate) navigator.vibrate(30); }
+      sendJ(C, { t: 'manifest', items: itemsOf(S.uid).map(meta), removed: [...S.tomb] });
+      render();
+      break;
+    }
+    case 'peers': (m.ids || []).forEach((pid) => connectTo(String(pid))); break;
+    case 'name': if (C.uid) { S.names[C.uid] = String(m.name || '').slice(0, 24); ls.set('hd.names', S.names); render(); } break;
+    case 'manifest':
+    case 'offer': {
+      if (!C.uid) return;
+      if (m.removed) for (const id of m.removed) { const it = S.items.get(id); if (it && it.owner === C.uid) deleteItem(id); }
+      const want = [];
+      for (const x of m.items || []) {
+        if (!x || !x.id || S.items.has(x.id) || S.incoming.has(x.id) || C.wanted.has(x.id)) continue;
+        C.wanted.add(x.id); want.push(x.id);
+      }
+      if (want.length) sendJ(C, { t: 'want', ids: want });
+      break;
+    }
+    case 'want': for (const id of m.ids || []) { const it = S.items.get(id); if (it && it.owner === S.uid && !C.queue.includes(id)) C.queue.push(id); } pump(C); break;
+    case 'fstart': {
+      if (!C.uid) return;
+      const key = 'down:' + C.conn.connectionId + ':' + m.id;
+      const name = String(m.name || 'file'), size = Math.max(0, +m.size || 0);
+      C.rx.set(m.tid, { tid: m.tid, id: String(m.id), name, type: String(m.type || ''), size, ts: +m.ts || Date.now(), parts: [], got: 0, key });
+      S.incoming.set(String(m.id), { id: String(m.id), name, size, type: m.type, owner: C.uid, got: 0 });
+      tset(key, { dir: 'down', name, size, who: S.names[C.uid] || 'teman' });
+      render();
+      break;
+    }
+    case 'fend': {
+      const rx = C.rx.get(m.tid); if (!rx) return;
+      C.rx.delete(m.tid); S.incoming.delete(rx.id); C.wanted.delete(rx.id);
+      const blob = new Blob(rx.parts, { type: rx.type });
+      rx.parts = null;
+      if (blob.size !== rx.size) { console.warn('size mismatch', blob.size, rx.size); tend(rx.key, false); render(); return; }
+      addItem({ id: rx.id, owner: C.uid, name: rx.name, type: rx.type, size: rx.size, ts: rx.ts, blob });
+      tend(rx.key, true);
+      sendJ(C, { t: 'got', id: rx.id });
+      break;
+    }
+    case 'fabort': { const rx = C.rx.get(m.tid); if (rx) { C.rx.delete(m.tid); S.incoming.delete(rx.id); C.wanted.delete(rx.id); tend(rx.key, false); render(); } break; }
+    case 'got': { const it = S.items.get(m.id); if (it && C.uid) { it.delivered.add(C.uid); const ok = document.querySelector(`[data-ok="${cssq(m.id)}"]`); if (ok) ok.classList.remove('hidden'); } break; }
+    case 'remove': {
+      // keamanan: hanya pemilik foto yang boleh menghapus fotonya sendiri
+      const it = S.items.get(m.id);
+      if (it && it.owner === C.uid) deleteItem(m.id);
+      for (const [tid, rx] of C.rx) if (rx.id === m.id) { C.rx.delete(tid); S.incoming.delete(rx.id); tend(rx.key, false); }
+      render();
+      break;
+    }
+    case 'ping': sendJ(C, { t: 'pong' }); break;
+  }
+}
+function onChunk(C, buf) {
+  if (!(buf instanceof ArrayBuffer) || buf.byteLength < 4) return;
+  const rx = C.rx.get(new DataView(buf).getUint32(0)); if (!rx) return;
+  rx.parts.push(new Uint8Array(buf, 4));
+  rx.got += buf.byteLength - 4;
+  const inc = S.incoming.get(rx.id); if (inc) inc.got = rx.got;
+  tprog(rx.key, rx.got);
+  if (!rx.uiT) rx.uiT = setTimeout(() => { rx.uiT = 0; updateIncomingUI(rx.id); }, 120);
+}
+function drain(C, dc) {
+  if (dc.bufferedAmount <= HIGH) return Promise.resolve();
+  return new Promise((res) => {
+    const done = () => { dc.removeEventListener('bufferedamountlow', done); clearInterval(iv); res(); };
+    dc.addEventListener('bufferedamountlow', done);
+    const iv = setInterval(() => { if (dc.bufferedAmount <= LOW || !C.open || dc.readyState !== 'open') done(); }, 250);
+  });
+}
+async function pump(C) {
+  if (C.pumping) return; C.pumping = true;
+  try {
+    while (C.open && C.queue.length) {
+      const id = C.queue[0]; const it = S.items.get(id);
+      if (!it || it.owner !== S.uid) { C.queue.shift(); continue; }
+      const dc = C.conn.dataChannel;
+      let max = CHUNK;
+      try { const mm = C.conn.peerConnection.sctp && C.conn.peerConnection.sctp.maxMessageSize; if (mm && mm < max) max = mm; } catch {}
+      const payload = max - 4;
+      const tid = ++S.tidSeq;
+      C.cur = { id, tid, abort: false };
+      const key = 'up:' + C.conn.connectionId + ':' + id;
+      tset(key, { dir: 'up', name: it.name, size: it.size, who: S.names[C.uid] || 'teman' });
+      sendJ(C, { t: 'fstart', tid, id, name: it.name, type: it.type, size: it.size, ts: it.ts });
+      let off = 0, ok = true;
+      try {
+        while (off < it.size && ok) {
+          const slab = new Uint8Array(await it.blob.slice(off, Math.min(off + SLAB, it.size)).arrayBuffer());
+          for (let p = 0; p < slab.length; p += payload) {
+            await drain(C, dc);
+            if (!C.open || C.cur.abort || !S.items.has(id)) { ok = false; break; }
+            const part = slab.subarray(p, Math.min(p + payload, slab.length));
+            const buf = new Uint8Array(4 + part.length);
+            new DataView(buf.buffer).setUint32(0, tid);
+            buf.set(part, 4);
+            if (!tx(C, buf.buffer)) { ok = false; break; }
+            off += part.length;
+            tprog(key, off);
+          }
+        }
+      } catch (e) { console.warn('read/send', e); ok = false; }
+      const gone = C.cur.abort || !S.items.has(id);
+      if (ok) { sendJ(C, { t: 'fend', tid, id }); C.queue.shift(); tend(key, true); }
+      else {
+        if (C.open) sendJ(C, { t: 'fabort', tid, id });
+        tend(key, gone);
+        if (gone) C.queue.shift(); else { C.cur = null; break; }
+      }
+      C.cur = null;
+    }
+  } finally { C.pumping = false; }
+}
+// heartbeat + deteksi koneksi mati + sambung ulang
+setInterval(() => {
+  for (const C of [...S.conns.values()]) {
+    if (!C.open) continue;
+    if (Date.now() - C.lastSeen > 25000) { try { C.conn.close(); } catch {} onClose(C); continue; }
+    sendJ(C, { t: 'ping' });
+  }
+  if (S.room && S.peer && !S.peer.destroyed && !S.isHost && S.peer.open && !openConns().length && !S.retryT && ![...S.conns.values()].some((c) => c.pending)) connectTo(hostId(S.room));
+}, 5000);
+
+// ---------------- Room flow ----------------
+function normCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); }
+async function enterRoom(code) {
+  code = normCode(code);
+  if (code.length < 4) { toast('Kode room minimal 4 karakter'); return; }
+  S.room = code; S.album = null; S.failCount = 0; S.everConnected = false; S.backoff = 1500;
+  S.tomb = new Set(ls.get('hd.tomb.' + code, []));
+  ls.set('hd.lastRoom', code);
+  history.replaceState(null, '', location.pathname + '?room=' + code);
+  $('#home').classList.add('hidden'); $('#room').classList.remove('hidden');
+  $('#albumView').classList.add('hidden'); $('#albumsSec').classList.remove('hidden');
+  $('#roomCode').textContent = code;
+  setStatus('warn', 'Menghubungkan…');
+  render();
+  requestWake();
+  if (S.cache) {
+    const recs = (await DB.list(code)) || [];
+    if (S.room !== code) return;
+    recs.sort((a, b) => a.ts - b.ts).forEach((r) => { if (r.blob && !S.tomb.has(r.id)) addItem({ id: r.id, owner: r.owner, name: r.name, type: r.type, size: r.size, ts: r.ts, blob: r.blob }, false); });
+  }
+  startPeer('host');
+}
+function leaveRoom() {
+  destroyPeer();
+  for (const it of S.items.values()) URL.revokeObjectURL(it.url);
+  S.items.clear(); S.incoming.clear(); S.tx.clear(); renderTx();
+  S.room = null; S.album = null;
+  history.replaceState(null, '', location.pathname);
+  releaseWake();
+  $('#room').classList.add('hidden'); $('#home').classList.remove('hidden');
+  initHome();
+}
+function initHome() {
+  const last = ls.get('hd.lastRoom', null);
+  $('#resumeBtn').classList.toggle('hidden', !last);
+  $('#resumeCode').textContent = last || '';
+  $('#nameIn').value = S.name;
+}
+async function requestWake() { try { if ('wakeLock' in navigator && !S.wake && document.visibilityState === 'visible') { S.wake = await navigator.wakeLock.request('screen'); S.wake.addEventListener('release', () => { S.wake = null; }); } } catch {} }
+function releaseWake() { try { S.wake && S.wake.release(); } catch {} S.wake = null; }
+
+// ---------------- Viewer + Simpan ----------------
+function openViewer(id) {
+  const it = S.items.get(id); if (!it) return;
+  S.viewList = itemsOf(it.owner).map((x) => x.id);
+  $('#viewer').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  showView(S.viewList.indexOf(id));
+}
+const NAV = (d) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+function showView(i) {
+  S.viewIdx = i;
+  const it = S.items.get(S.viewList[i]); if (!it) return closeViewer();
+  $('#vStage').innerHTML = (isVideo(it) ? `<video src="${it.url}" controls playsinline></video>` : `<img src="${it.url}" alt="${esc(it.name)}">`) +
+    (S.viewList.length > 1 ? `<button class="v-nav prev" aria-label="Sebelumnya">${NAV('M15 18l-6-6 6-6')}</button><button class="v-nav next" aria-label="Berikutnya">${NAV('M9 18l6-6-6-6')}</button>` : '');
+  $('#vName').textContent = it.name;
+  $('#vInfo').textContent = `dari ${ownerName(it.owner)} · ${fmtSize(it.size)}` + (it.owner === S.uid ? (it.delivered.size ? ' · ✓ diterima teman' : ' · belum diterima teman') : '');
+  $('#vPos').textContent = S.viewList.length > 1 ? `${i + 1}/${S.viewList.length}` : '';
+  $('#vRemove').classList.toggle('hidden', it.owner !== S.uid);
+  $('#vNote').textContent = it.owner === S.uid
+    ? '“Stop bagikan” menghapusnya dari galeri bersama. File asli di galeri HP kamu tetap aman.'
+    : 'File asli, kualitas penuh. Di iPhone: Simpan → “Simpan Gambar / Simpan Video” agar masuk ke app Foto.';
+}
+function closeViewer() { $('#viewer').classList.add('hidden'); $('#vStage').innerHTML = ''; document.body.style.overflow = ''; }
+function step(d) { if (S.viewList.length < 2) return; showView((S.viewIdx + d + S.viewList.length) % S.viewList.length); }
+function fileOf(it) { try { return new File([it.blob], it.name, { type: it.type || 'application/octet-stream', lastModified: it.ts }); } catch { return null; } }
+function download(it) { const a = document.createElement('a'); a.href = it.url; a.download = it.name; document.body.appendChild(a); a.click(); a.remove(); }
+async function saveItems(list) {
+  if (!list.length) return;
+  const files = list.map(fileOf).filter(Boolean);
+  if (navigator.canShare && navigator.share && files.length === list.length) {
+    let can = false; try { can = navigator.canShare({ files }); } catch {}
+    if (can) {
+      try { await navigator.share({ files }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; console.warn('share failed', e); }
+    }
+  }
+  for (let i = 0; i < list.length; i++) { download(list[i]); if (i < list.length - 1) await new Promise((r) => setTimeout(r, 450)); }
+  toast(list.length > 1 ? `${list.length} file diunduh` : 'File diunduh');
+}
+
+// ---------------- Modal: pengaturan + QR ----------------
+function openModal(html) { $('#sheet').innerHTML = '<div class="grab"></div>' + html; $('#modal').classList.remove('hidden'); }
+function closeModal() { $('#modal').classList.add('hidden'); }
+function openSettings() {
+  openModal(`
+    <h3>Pengaturan</h3>
+    <div class="set-item" style="border-top:0"><div class="k">Nama kamu</div><div class="d">Tampil di HP teman sebagai album “Foto [nama]”.</div>
+      <div class="row" style="margin-top:10px"><input class="field" id="setName" maxlength="24" placeholder="mis. Edhy" value="${esc(S.name)}"><button class="btn primary" id="setNameSave">Simpan</button></div></div>
+    <div class="set-item row" style="justify-content:space-between"><div><div class="k">Simpan cache di HP ini</div><div class="d">Foto tetap ada kalau halaman ter-reload. Hanya di browser HP ini, bukan di server.</div></div><button class="switch ${S.cache ? 'on' : ''}" id="setCache" aria-label="Cache lokal"></button></div>
+    ${S.room ? `<div class="set-item"><div class="k">Room ${esc(S.room)}</div><div class="d">${openConns().length} teman terhubung · ${S.items.size} file di galeri.</div>
+      <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn ghost sm" id="setClear">Hapus cache room</button><button class="btn danger sm" id="setLeave">Keluar room</button></div></div>` : ''}
+    <div class="set-item"><div class="k">Tentang</div><div class="d">HD Gallery · Hyper-Direct P2P Sharing.<br>File dikirim langsung antar perangkat lewat WebRTC (server PeerJS hanya “mempertemukan” kedua HP). Tidak ada foto yang di-upload ke server. Kamu tidak bisa menghapus foto milik teman, dan teman tidak bisa menghapus fotomu.</div></div>
+    <button class="btn ghost block" id="setClose" style="margin-top:6px">Tutup</button>`);
+  $('#setNameSave').onclick = () => { setName($('#setName').value); toast('Nama disimpan'); render(); };
+  $('#setCache').onclick = (e) => { S.cache = !S.cache; ls.set('hd.cache', S.cache); e.currentTarget.classList.toggle('on', S.cache); if (S.cache && S.room) for (const it of S.items.values()) DB.put(S.room, it); };
+  if ($('#setClear')) $('#setClear').onclick = async () => { await DB.clearRoom(S.room); toast('Cache room dihapus dari HP ini'); };
+  if ($('#setLeave')) $('#setLeave').onclick = () => { closeModal(); leaveRoom(); };
+  $('#setClose').onclick = closeModal;
+}
+function setName(v) {
+  S.name = String(v || '').trim().slice(0, 24); ls.set('hd.name', S.name);
+  $('#nameIn').value = S.name;
+  for (const c of openConns()) sendJ(c, { t: 'name', name: S.name });
+}
+function openQR() {
+  const url = shareUrl();
+  let svg = '';
+  try { const q = qrcode(0, 'M'); q.addData(url); q.make(); svg = q.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); } catch { svg = ''; }
+  openModal(`<h3 style="text-align:center">Scan untuk gabung</h3>
+    ${svg ? `<div class="qrbox">${svg}</div>` : '<div class="empty">QR tidak tersedia (library gagal dimuat). Pakai link di bawah.</div>'}
+    <div style="text-align:center;margin-bottom:10px"><div class="rlabel">KODE ROOM</div><div class="rcode" style="font-size:24px">${esc(S.room)}</div></div>
+    <div class="linkbox">${esc(url)}</div>
+    <div class="row" style="margin-top:12px"><button class="btn ghost" style="flex:1" id="qrCopy">Salin link</button><button class="btn primary" style="flex:1" id="qrClose">Selesai</button></div>
+    <div class="help" style="text-align:center">Buka Kamera iPhone teman → arahkan ke QR → tap link yang muncul.</div>`);
+  $('#qrCopy').onclick = copyLink; $('#qrClose').onclick = closeModal;
+}
+async function copyLink() {
+  const url = shareUrl();
+  try { await navigator.clipboard.writeText(url); toast('Link room disalin'); }
+  catch { const t = document.createElement('textarea'); t.value = url; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); toast('Link room disalin'); } catch { toast(url); } t.remove(); }
+}
+async function shareLink() {
+  const url = shareUrl();
+  if (navigator.share) { try { await navigator.share({ title: 'HD Gallery', text: `Yuk gabung room HD Gallery aku (kode ${S.room}) buat kirim-kiriman foto:`, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  copyLink();
+}
+
+// ---------------- Events ----------------
+$('#gearBtn').onclick = openSettings;
+$('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+$('#createBtn').onclick = () => { setName($('#nameIn').value); enterRoom(rand(6, ALPHA)); };
+$('#joinCardBtn').onclick = () => { const b = $('#joinBox'); b.classList.toggle('hidden'); if (!b.classList.contains('hidden')) $('#codeIn').focus(); };
+$('#codeIn').addEventListener('input', (e) => { e.target.value = normCode(e.target.value); });
+$('#codeIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#joinBtn').click(); });
+$('#joinBtn').onclick = () => { setName($('#nameIn').value); enterRoom($('#codeIn').value); };
+$('#resumeBtn').onclick = () => enterRoom(ls.get('hd.lastRoom', ''));
+$('#nameIn').addEventListener('change', (e) => setName(e.target.value));
+$('#copyBtn').onclick = copyLink; $('#qrBtn').onclick = openQR; $('#shareBtn').onclick = shareLink;
+$('#fileIn').addEventListener('change', (e) => { const files = [...e.target.files]; e.target.value = ''; onPick(files); });
+$('#albums').addEventListener('click', (e) => { const b = e.target.closest('[data-album]'); if (b) openAlbum(b.dataset.album); });
+$('#backBtn').onclick = closeAlbum;
+$('#grid').addEventListener('click', (e) => { const t = e.target.closest('.tile[data-id]'); if (t) openViewer(t.dataset.id); });
+$('#saveAllBtn').onclick = () => saveItems(itemsOf(S.album));
+$('#vClose').onclick = closeViewer;
+$('#vSave').onclick = () => { const it = S.items.get(S.viewList[S.viewIdx]); if (it) saveItems([it]); };
+$('#vRemove').onclick = () => { const id = S.viewList[S.viewIdx]; if (confirm('Stop bagikan file ini? File akan hilang dari galeri bersama (file asli di HP kamu tetap aman).')) removeMine(id); };
+$('#vStage').addEventListener('click', (e) => { if (e.target.closest('.prev')) step(-1); else if (e.target.closest('.next')) step(1); });
+let t0 = null;
+$('#vStage').addEventListener('touchstart', (e) => { if (e.touches.length === 1) t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+$('#vStage').addEventListener('touchend', (e) => {
+  if (!t0) return; const dx = e.changedTouches[0].clientX - t0.x, dy = e.changedTouches[0].clientY - t0.y; t0 = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) step(dx < 0 ? 1 : -1);
+  else if (dy > 110 && Math.abs(dy) > Math.abs(dx) * 1.5) closeViewer();
+}, { passive: true });
+document.addEventListener('keydown', (e) => {
+  if ($('#viewer').classList.contains('hidden')) { if (e.key === 'Escape') closeModal(); return; }
+  if (e.key === 'Escape') closeViewer(); if (e.key === 'ArrowLeft') step(-1); if (e.key === 'ArrowRight') step(1);
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !S.room) return;
+  requestWake();
+  // iPhone sering memutus koneksi saat Safari di background → sambung lagi otomatis
+  if (!S.peer || S.peer.destroyed) startPeer('host');
+  else if (S.peer.disconnected) { try { S.peer.reconnect(); } catch { startPeer('host'); } }
+  else if (!S.isHost && !openConns().length) connectTo(hostId(S.room));
+  render();
+});
+window.addEventListener('online', () => { if (S.room) { S.backoff = 1500; if (!S.peer || S.peer.destroyed || S.peer.disconnected) startPeer('host'); } render(); });
+window.addEventListener('offline', render);
+window.addEventListener('beforeunload', (e) => { if ([...S.tx.values()].some((r) => r.state === 'run')) { e.preventDefault(); e.returnValue = ''; } });
+
+// hook kecil untuk test otomatis
+window.__hd = {
+  S, removeMine,
+  async sha(id) { const it = S.items.get(id); if (!it) return null; const h = await crypto.subtle.digest('SHA-256', await it.blob.arrayBuffer()); return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, '0')).join(''); },
+  list() { return [...S.items.values()].map((i) => ({ id: i.id, name: i.name, size: i.size, type: i.type, mine: i.owner === S.uid, delivered: i.delivered.size })); },
+  connected() { return openConns().length; },
+  role() { return S.isHost ? 'host' : 'guest'; }
+};
+
+initHome();
+const qRoom = normCode(new URLSearchParams(location.search).get('room'));
+if (qRoom.length >= 4) enterRoom(qRoom);
+})();
+</script>
+</body>
+</html>
