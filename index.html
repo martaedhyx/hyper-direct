@@ -11,6 +11,9 @@
 <title>HD Gallery — Hyper-Direct P2P Sharing</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='g' cx='36%25' cy='30%25' r='75%25'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='.45' stop-color='%23eef1f6'/%3E%3Cstop offset='.82' stop-color='%23cfd5de'/%3E%3Cstop offset='1' stop-color='%23aeb6c2'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='49' fill='url(%23g)'/%3E%3Cellipse cx='30' cy='24' rx='15' ry='7' fill='%23fff' opacity='.9' transform='rotate(-35 30 24)'/%3E%3Crect x='55' y='21' width='10' height='19' rx='5' fill='%23111318' transform='rotate(-25 60 30.5)'/%3E%3Crect x='75.75' y='17.5' width='8.5' height='18' rx='4.25' fill='%23111318' transform='rotate(-25 80 26.5)'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
@@ -113,6 +116,15 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .tile .badge{position:absolute;left:6px;bottom:6px;font-size:10.5px;font-weight:700;background:rgba(2,6,23,.72);color:#fff;padding:3px 6px;border-radius:7px}
 .tile .ok{position:absolute;right:6px;bottom:6px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgba(2,6,23,.72);color:var(--cyan);font-size:11px;font-weight:900}
 .tile.loading{display:grid;place-items:center;text-align:center;padding:8px}
+.tile .from{position:absolute;left:6px;top:6px;font-size:10px;font-weight:700;background:rgba(2,6,23,.75);color:#f9a8d4;padding:2px 6px;border-radius:7px;max-width:85%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile.paused .ring .fg{stroke:var(--amber)}
+.acard .new{position:absolute;top:16px;right:14px;font-size:11px;font-weight:800;color:#fff;background:var(--pink);padding:4px 8px;border-radius:99px;box-shadow:0 4px 14px -4px rgba(244,114,182,.7)}
+.notice{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(244,114,182,.1);border:1px solid rgba(244,114,182,.35);color:#fbcfe8;border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:13.5px;font-weight:600}
+.notice b{color:#fff}
+.linkbtn{color:var(--cyan);font-size:12.5px;font-weight:700;padding:4px 2px}
+.tx-row.click{cursor:pointer}
+.tx-row.click:active{transform:scale(.99)}
+.tx-row.paused .bar>div{background:var(--amber)}
 .ring{width:46px;height:46px}
 .ring circle{fill:none;stroke-width:5}
 .ring .bg{stroke:#1e2a44}.ring .fg{stroke:var(--cyan);stroke-linecap:round;transition:stroke-dashoffset .15s;transform:rotate(-90deg);transform-origin:center}
@@ -162,11 +174,56 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .linkbox{font-size:12.5px;color:#cbd5e1;background:#0b1529;border:1px solid var(--line);border-radius:12px;padding:10px 12px;word-break:break-all;text-align:center}
 .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);transform:translateX(-50%) translateY(-20px);opacity:0;z-index:80;background:#e6edf7;color:#0a1324;font-weight:700;font-size:13.5px;padding:11px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:all .25s;max-width:88vw;text-align:center;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ===== Landing / splash ===== */
+.landing{position:fixed;inset:0;z-index:45;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 28px);background:radial-gradient(120% 70% at 50% 0%,#0f1d3d 0%,#070b18 55%,#04060d 100%);transition:opacity .45s ease,transform .45s ease}
+.landing.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.stars,.stars2{position:absolute;inset:-20px;pointer-events:none;background-repeat:repeat}
+.stars{background-size:220px 220px;background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(1.6px 1.6px at 60px 120px,#e6f6ff,transparent),radial-gradient(2px 2px at 140px 60px,#fff,transparent),radial-gradient(1.4px 1.4px at 180px 170px,#cff,transparent),radial-gradient(1.8px 1.8px at 100px 200px,#fff,transparent);animation:twinkle 4.5s ease-in-out infinite}
+.stars2{background-size:160px 160px;background-image:radial-gradient(1px 1px at 10px 90px,#fff,transparent),radial-gradient(1px 1px at 80px 20px,#bdf,transparent),radial-gradient(1.2px 1.2px at 130px 130px,#fff,transparent),radial-gradient(1px 1px at 50px 150px,#cff,transparent);animation:twinkle 3.2s ease-in-out infinite reverse;opacity:.7}
+@keyframes twinkle{0%,100%{opacity:.95}50%{opacity:.35}}
+.l-glow{position:absolute;width:520px;height:520px;left:50%;top:38%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(34,211,238,.13),transparent 62%);pointer-events:none}
+.l-mascot{position:relative;width:clamp(132px,40vw,184px);aspect-ratio:1/1;animation:lfloat 4.2s ease-in-out infinite;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55)) drop-shadow(0 0 18px rgba(34,211,238,.25))}
+.l-mascot svg{width:100%;height:100%;display:block;overflow:visible}
+.l-mascot .m-eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+@keyframes lfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.l-shadow{width:clamp(72px,22vw,104px);height:12px;margin:10px auto 0;border-radius:50%;background:rgba(34,211,238,.35);filter:blur(7px);animation:lshadow 4.2s ease-in-out infinite}
+@keyframes lshadow{0%,100%{transform:scaleX(1);opacity:.65}50%{transform:scaleX(.7);opacity:.32}}
+.l-title{position:relative;margin:30px 0 10px;font-family:'Orbitron','Arial Black','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:clamp(2.15rem,11.2vw,4.6rem);line-height:1.1;letter-spacing:.04em;background:linear-gradient(90deg,#22d3ee 0%,#38bdf8 45%,#2563eb 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(6,182,212,.55))}
+.l-title span{display:inline-block}
+.l-tag{position:relative;color:rgba(165,243,252,.8);font-size:12px;letter-spacing:.32em;font-weight:600;margin:0 0 44px;padding-left:.32em}
+.l-btn{position:relative;display:inline-flex;align-items:center;gap:10px;padding:15px 38px;border-radius:999px;border:1.5px solid rgba(34,211,238,.75);background:rgba(17,25,40,.55);color:#22d3ee;font-weight:800;font-size:15px;letter-spacing:.18em;box-shadow:0 0 22px -6px rgba(34,211,238,.6),inset 0 0 14px rgba(34,211,238,.08);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .15s,background .15s,color .15s}
+.l-btn:active{transform:scale(.96);background:rgba(8,51,68,.7);color:#fff}
+.l-foot{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 16px);font-size:11px;color:rgba(148,163,184,.6);letter-spacing:.08em}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (min-width:700px){.grid3{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
+<section class="landing" id="landing" aria-label="Hyper Direct">
+  <div class="stars"></div><div class="stars2"></div><div class="l-glow"></div>
+  <div class="l-mascot" role="img" aria-label="Maskot Hyper Direct">
+    <svg viewBox="0 0 100 100" focusable="false">
+      <defs>
+        <radialGradient id="mg2" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#eef1f6"/><stop offset=".82" stop-color="#cfd5de"/><stop offset="1" stop-color="#aeb6c2"/></radialGradient>
+        <clipPath id="mc2"><circle cx="50" cy="50" r="47.5"/></clipPath>
+      </defs>
+      <circle cx="50" cy="50" r="49" fill="url(#mg2)"/>
+      <circle cx="50" cy="50" r="48.4" fill="none" stroke="rgba(15,23,42,.12)" stroke-width="1.2"/>
+      <ellipse cx="30" cy="24" rx="15" ry="7" fill="#fff" opacity=".9" transform="rotate(-35 30 24)"/>
+      <g clip-path="url(#mc2)">
+        <ellipse cx="53" cy="47" rx="6" ry="3.2" fill="#ff8fb1" opacity=".5" transform="rotate(-25 53 47)"/>
+        <ellipse cx="86" cy="42" rx="5" ry="2.8" fill="#ff8fb1" opacity=".5" transform="rotate(-25 86 42)"/>
+        <g transform="rotate(-25 60 30.5)"><rect class="m-eye" x="55" y="21" width="10" height="19" rx="5" fill="#111318"/></g>
+        <g transform="rotate(-25 80 26.5)"><rect class="m-eye" x="75.75" y="17.5" width="8.5" height="18" rx="4.25" fill="#111318"/></g>
+      </g>
+    </svg>
+  </div>
+  <div class="l-shadow"></div>
+  <h1 class="l-title"><span>HYPER</span> <span>DIRECT</span></h1>
+  <p class="l-tag">BERBAGI FOTO HD LANGSUNG</p>
+  <button class="l-btn" id="startBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>MULAI</button>
+  <div class="l-foot">P2P · kualitas asli · tanpa server</div>
+</section>
 <div class="wrap">
   <header>
     <div class="brand">
@@ -260,13 +317,15 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
     <div class="help" style="margin-top:8px">ℹ️ Browser tidak bisa membaca galeri otomatis — hanya file yang kamu pilih yang dibagikan. Di iPhone, kalau ada pilihan ukuran, pilih <b>“Ukuran Asli / Actual Size”</b>.</div>
 
     <div id="txSec" class="hidden">
-      <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l-4-4 4-4"/><path d="M3 13h13"/><path d="M17 7l4 4-4 4"/></svg>Transfer<span class="grow"></span><small id="txSum"></small></div>
+      <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l-4-4 4-4"/><path d="M3 13h13"/><path d="M17 7l4 4-4 4"/></svg>Transfer<span class="grow"></span><small id="txSum"></small><button class="linkbtn hidden" id="txClear">Bersihkan</button></div>
       <div class="tx" id="txList"></div>
     </div>
 
     <section id="albumsSec">
       <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>Album<span class="grow"></span><small id="albumSum"></small></div>
       <div class="grid2" id="albums"></div>
+      <div class="label"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>Semua file<span class="grow"></span><small id="allSum"></small></div>
+      <div class="grid3" id="allGrid"></div>
     </section>
 
     <section id="albumView" class="hidden">
@@ -275,6 +334,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
         <div class="av-title"><b id="avTitle">Album</b><span id="avCount"></span></div>
         <button class="btn ghost sm hidden" id="saveAllBtn">Simpan semua</button>
       </div>
+      <button class="notice hidden" id="avNotice"></button>
       <div class="grid3" id="grid"></div>
     </section>
   </main>
@@ -335,6 +395,9 @@ const S = {
   room: null, peer: null, mode: null, isHost: false,
   conns: new Map(), items: new Map(), incoming: new Map(), tx: new Map(),
   tomb: new Set(), tidSeq: 0,
+  partial: new Map(),                     // id -> transfer yang terputus (dilanjutkan dari offset)
+  unseen: new Map(),                      // owner uid -> jumlah file baru belum dilihat
+  retries: new Map(), stats: { resumed: 0 },
   album: null, viewList: [], viewIdx: -1,
   failCount: 0, retryT: null, backoff: 1500, wake: null, everConnected: false
 };
@@ -354,7 +417,7 @@ const DB = {
     });
   },
   async run(mode, fn) { const db = await this.open(); return new Promise((res, rej) => { const t = db.transaction('items', mode); const out = fn(t.objectStore('items')); t.oncomplete = () => res(out && out.result); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
-  put(room, it) { if (!S.cache) return Promise.resolve(); return this.run('readwrite', (s) => s.put({ k: room + ':' + it.id, room, id: it.id, owner: it.owner, name: it.name, type: it.type, size: it.size, ts: it.ts, blob: it.blob })).catch((e) => { console.warn('cache put', e); toast('Penyimpanan lokal penuh — foto tetap tampil selama halaman terbuka'); }); },
+  put(room, it) { if (!S.cache) return Promise.resolve(); return this.run('readwrite', (s) => s.put({ k: room + ':' + it.id, room, id: it.id, owner: it.owner, ownerName: it.ownerName || '', name: it.name, type: it.type, size: it.size, ts: it.ts, rts: it.rts || 0, unshared: !!it.unshared, blob: it.blob })).catch((e) => { console.warn('cache put', e); toast('Penyimpanan lokal penuh — foto tetap tampil selama halaman terbuka'); }); },
   del(room, id) { return this.run('readwrite', (s) => s.delete(room + ':' + id)).catch(() => {}); },
   list(room) { return this.run('readonly', (s) => s.index('room').getAll(room)).catch(() => []); },
   async clearRoom(room) { const all = (await this.list(room)) || []; return this.run('readwrite', (s) => { all.forEach((r) => s.delete(r.k)); }).catch(() => {}); }
@@ -400,46 +463,40 @@ const ICONS = {
   me: '<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/></svg>',
   friend: '<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
 };
-function albumOwners() {
-  const owners = new Set();
-  for (const it of S.items.values()) owners.add(it.owner);
-  for (const inc of S.incoming.values()) owners.add(inc.owner);
-  for (const c of openConns()) owners.add(c.uid);
-  owners.delete(S.uid);
-  const friends = [...owners];
-  return [S.uid, ...(friends.length ? friends : ['__friend'])];
+// Album dikunci dengan ID perangkat yang stabil (localStorage), BUKAN PeerJS id.
+const FRIENDS = '__friend';   // kartu "Foto Teman" = semua file yang bukan milik saya
+function friendUids() {
+  const s = new Set();
+  for (const it of S.items.values()) s.add(it.owner);
+  for (const x of S.incoming.values()) s.add(x.owner);
+  for (const c of openConns()) s.add(c.uid);
+  s.delete(S.uid);
+  return [...s];
 }
+function albumOwners() { const f = friendUids(); return [S.uid, ...(f.length ? f : [FRIENDS])]; }
+function inAlbum(owner, uid) { return uid === FRIENDS ? owner !== S.uid : owner === uid; }
+const sortKey = (i) => i.rts || i.ts;
+function itemsOf(uid) { return [...S.items.values()].filter((i) => inAlbum(i.owner, uid)).sort((a, b) => sortKey(b) - sortKey(a)); }
+function incomingOf(uid) { return [...S.incoming.values()].filter((x) => uid == null || inAlbum(x.owner, uid)); }
+function allItems() { return [...S.items.values()].sort((a, b) => sortKey(b) - sortKey(a)); }
+function unseenFor(uid) { if (uid === FRIENDS) { let n = 0; for (const [k, v] of S.unseen) if (k !== S.uid) n += v; return n; } return S.unseen.get(uid) || 0; }
 function countText(items) { const v = items.filter(isVideo).length, f = items.length - v; return v ? `${f} foto · ${v} video` : `${f} foto`; }
-function itemsOf(uid) { return [...S.items.values()].filter((i) => i.owner === uid).sort((a, b) => b.ts - a.ts); }
 function renderAlbums() {
-  let total = 0;
   $('#albums').innerHTML = albumOwners().map((uid, i) => {
-    const its = uid === '__friend' ? [] : itemsOf(uid);
-    total += its.length;
-    const inc = [...S.incoming.values()].filter((x) => x.owner === uid).length;
+    const its = itemsOf(uid);
+    const inc = incomingOf(uid).length, nu = unseenFor(uid);
     const color = uid === S.uid ? '' : ['pink', 'violet', 'green'][(i - 1) % 3];
     const thumbs = its.filter((x) => !isVideo(x)).slice(0, 3).reverse().map((x) => `<span style="background-image:url('${x.url}')"></span>`).join('');
-    const right = inc ? `<span class="live">↓ ${inc}</span>` : (thumbs ? `<div class="thumbs">${thumbs}</div>` : '');
-    const title = uid === '__friend' ? 'Foto Teman' : albumTitle(uid);
+    const right = inc ? `<span class="live">↓ ${inc}</span>` : nu ? `<span class="new">+${nu} baru</span>` : (thumbs ? `<div class="thumbs">${thumbs}</div>` : '');
+    const title = uid === FRIENDS ? 'Foto Teman' : albumTitle(uid);
     return `<button class="acard" data-album="${esc(uid)}">${right}<div class="ic ${color}">${uid === S.uid ? ICONS.me : ICONS.friend}</div><div class="nm">${esc(title)}</div><div class="ct">${countText(its)}</div></button>`;
   }).join('');
-  $('#albumSum').textContent = total ? `${total} file · ${fmtSize([...S.items.values()].reduce((a, b) => a + b.size, 0))}` : '';
 }
 function ringSvg(p) { const r = 19, c = 2 * Math.PI * r; return `<svg class="ring" viewBox="0 0 46 46"><circle class="bg" cx="23" cy="23" r="${r}"/><circle class="fg" cx="23" cy="23" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p)}"/></svg>`; }
-function renderGrid() {
-  const uid = S.album; if (uid == null) return;
-  const its = uid === '__friend' ? [] : itemsOf(uid);
-  const inc = [...S.incoming.values()].filter((x) => x.owner === uid);
-  $('#avTitle').textContent = uid === '__friend' ? 'Foto Teman' : albumTitle(uid);
-  $('#avCount').textContent = countText(its) + (its.length ? ' · ' + fmtSize(its.reduce((a, b) => a + b.size, 0)) : '') + (inc.length ? ` · menerima ${inc.length}` : '');
-  $('#saveAllBtn').classList.toggle('hidden', uid === S.uid || its.length < 2);
-  const g = $('#grid');
-  if (!its.length && !inc.length) {
-    g.innerHTML = `<div class="empty">${uid === S.uid ? 'Belum ada foto yang kamu bagikan.<br>Tap <b>Pilih Foto / Video</b> di atas.' : 'Belum ada foto dari teman.<br>Minta temanmu tap <b>Pilih Foto / Video</b> di HP-nya.'}</div>`;
-    return;
-  }
-  // update tile seperlunya supaya gambar tidak berkedip
-  const want = [...inc.map((x) => 'inc:' + x.id), ...its.map((x) => 'it:' + x.id)];
+// diff tile seperlunya (gambar tidak berkedip / tidak hilang saat re-render)
+function renderTiles(g, its, inc, emptyHtml, showFrom) {
+  if (!its.length && !inc.length) { g.innerHTML = `<div class="empty">${emptyHtml}</div>`; return; }
+  const want = [...inc.map((x) => 'inc:' + x.id + (x.paused ? ':p' : '')), ...its.map((x) => 'it:' + x.id)];
   const wantSet = new Set(want);
   const existing = new Map();
   [...g.children].forEach((e) => { if (e.dataset.key && wantSet.has(e.dataset.key)) existing.set(e.dataset.key, e); else e.remove(); });
@@ -449,17 +506,19 @@ function renderGrid() {
     if (!el) {
       el = document.createElement('button');
       el.className = 'tile'; el.dataset.key = key;
-      const id = key.slice(key.indexOf(':') + 1);
       if (key.startsWith('inc:')) {
+        const id = key.slice(4).replace(/:p$/, '');
         const x = S.incoming.get(id); const p = x.size ? x.got / x.size : 0;
-        el.classList.add('loading');
-        el.innerHTML = `<div><div data-ring="${esc(id)}">${ringSvg(p)}</div><div class="fn">${esc(x.name)}</div><div class="fn" data-pct="${esc(id)}">${Math.floor(p * 100)}%</div></div>`;
+        el.classList.add('loading'); if (x.paused) el.classList.add('paused');
+        el.innerHTML = `<div><div data-ring="${esc(id)}">${ringSvg(p)}</div><div class="fn">${esc(x.name)}</div><div class="fn" data-pct="${esc(id)}">${x.paused ? '⏸ terputus · lanjut otomatis' : Math.floor(p * 100) + '%'}</div></div>`;
       } else {
+        const id = key.slice(3);
         const it = S.items.get(id);
         el.dataset.id = id;
-        el.innerHTML = isVideo(it)
+        el.innerHTML = (isVideo(it)
           ? `<video src="${it.url}#t=0.001" muted playsinline preload="metadata"></video><span class="badge">▶ ${fmtSize(it.size)}</span>`
-          : `<img src="${it.url}" alt="" decoding="async"><span class="badge">${fmtSize(it.size)}</span>`;
+          : `<img src="${it.url}" alt="" decoding="async"><span class="badge">${fmtSize(it.size)}</span>`) +
+          (showFrom && it.owner !== S.uid ? `<span class="from">dari ${esc(ownerName(it.owner))}</span>` : '');
         if (it.owner === S.uid) el.insertAdjacentHTML('beforeend', `<span class="ok ${it.delivered.size ? '' : 'hidden'}" data-ok="${esc(id)}" title="Sudah diterima teman">✓</span>`);
       }
     }
@@ -468,52 +527,85 @@ function renderGrid() {
     prev = el;
   }
 }
+function renderAll() {
+  const its = allItems(), inc = incomingOf(null);
+  $('#allSum').textContent = its.length ? `${its.length} file · ${fmtSize(its.reduce((a, b) => a + b.size, 0))}` : '';
+  renderTiles($('#allGrid'), its, inc, 'Belum ada file.<br>Tap <b>Pilih Foto / Video</b>, atau tunggu kiriman teman — file yang diterima muncul di sini.', true);
+}
+function renderGrid() {
+  const uid = S.album; if (uid == null) return;
+  const its = itemsOf(uid), inc = incomingOf(uid);
+  $('#avTitle').textContent = uid === FRIENDS ? 'Foto Teman' : albumTitle(uid);
+  $('#avCount').textContent = countText(its) + (its.length ? ' · ' + fmtSize(its.reduce((a, b) => a + b.size, 0)) : '') + (inc.length ? ` · menerima ${inc.length}` : '');
+  $('#saveAllBtn').classList.toggle('hidden', uid === S.uid || its.length < 2);
+  // file baru dari album lain → tampilkan pemberitahuan yang bisa di-tap (tidak "hilang" diam-diam)
+  const other = uid === S.uid ? unseenFor(FRIENDS) : 0;
+  const nb = $('#avNotice');
+  nb.classList.toggle('hidden', !other);
+  if (other) { const f = friendUids(); nb.dataset.album = f.length === 1 ? f[0] : FRIENDS; nb.innerHTML = `📥 <span><b>${other} file baru</b> dari ${esc(f.length === 1 ? ownerName(f[0]) : 'teman')} — tap untuk lihat</span>`; }
+  renderTiles($('#grid'), its, inc, uid === S.uid ? 'Belum ada foto yang kamu bagikan.<br>Tap <b>Pilih Foto / Video</b> di atas.' : 'Belum ada foto dari teman.<br>Minta temanmu tap <b>Pilih Foto / Video</b> di HP-nya.', uid === FRIENDS);
+}
 let renderQ = false;
-function render() { if (renderQ) return; renderQ = true; requestAnimationFrame(() => { renderQ = false; renderAlbums(); if (S.album != null) renderGrid(); refreshStatus(); }); }
-function openAlbum(uid) { S.album = uid; $('#albumsSec').classList.add('hidden'); $('#albumView').classList.remove('hidden'); $('#grid').innerHTML = ''; renderGrid(); }
+function render() { if (renderQ) return; renderQ = true; requestAnimationFrame(() => { renderQ = false; renderAlbums(); renderAll(); if (S.album != null) renderGrid(); refreshStatus(); }); }
+function clearUnseen(uid) { if (uid === FRIENDS) { for (const k of [...S.unseen.keys()]) if (k !== S.uid) S.unseen.delete(k); } else S.unseen.delete(uid); }
+function openAlbum(uid) { S.album = uid; clearUnseen(uid); $('#albumsSec').classList.add('hidden'); $('#albumView').classList.remove('hidden'); $('#grid').innerHTML = ''; renderGrid(); render(); }
 function closeAlbum() { S.album = null; $('#albumView').classList.add('hidden'); $('#albumsSec').classList.remove('hidden'); render(); }
 
-// transfer rows
-function tset(key, row) { S.tx.set(key, { ...row, done: 0, t0: performance.now(), state: 'run' }); renderTx(); }
+// transfer rows: key stabil per file (bukan per koneksi) → transfer yang dilanjutkan memakai baris yang sama.
+// Baris selesai TIDAK hilang sendiri: jadi riwayat yang bisa di-tap untuk membuka file.
+function tset(key, row) { const old = S.tx.get(key); S.tx.delete(key); S.tx.set(key, { ...(old || {}), ...row, t0: performance.now(), base: row.done || 0, state: 'run' }); renderTx(); }
 function tprog(key, done) { const r = S.tx.get(key); if (r) { r.done = done; scheduleTx(); } }
-function tend(key, ok) { const r = S.tx.get(key); if (!r) return; r.state = ok ? 'done' : 'fail'; if (ok) r.done = r.size; renderTx(); setTimeout(() => { if (S.tx.get(key) === r) { S.tx.delete(key); renderTx(); } }, ok ? 2000 : 3500); }
+function tend(key, state) {
+  const r = S.tx.get(key); if (!r) return;
+  r.state = state === true ? 'done' : state === false ? 'fail' : state;
+  if (r.state === 'done') r.done = r.size;
+  // simpan maksimal 3 riwayat selesai (file tetap ada di galeri; ini hanya daftar transfer)
+  const done = [...S.tx.entries()].filter(([, x]) => x.state === 'done');
+  for (const [k] of done.slice(0, Math.max(0, done.length - 3))) S.tx.delete(k);
+  if (r.state === 'fail') setTimeout(() => { if (S.tx.get(key) === r && r.state === 'fail') { S.tx.delete(key); renderTx(); } }, 6000);
+  renderTx();
+}
 let txQ = 0;
 function scheduleTx() { if (txQ) return; txQ = setTimeout(() => { txQ = 0; renderTx(); }, 120); }
 function renderTx() {
-  const rows = [...S.tx.entries()];
+  const rows = [...S.tx.entries()].reverse();
   $('#txSec').classList.toggle('hidden', !rows.length);
   const list = $('#txList');
   if (!rows.length) { list.innerHTML = ''; return; }
-  const run = rows.filter(([, r]) => r.state === 'run').length;
-  $('#txSum').textContent = run ? `${run} berjalan` : 'selesai';
+  const run = rows.filter(([, r]) => r.state === 'run').length, paused = rows.filter(([, r]) => r.state === 'paused').length;
+  $('#txSum').textContent = run ? `${run} berjalan` : paused ? `${paused} tertunda` : 'selesai';
+  $('#txClear').classList.toggle('hidden', !rows.some(([, r]) => r.state === 'done' || r.state === 'fail'));
   const keys = new Set(rows.map(([k]) => k));
   const els = new Map();
   [...list.children].forEach((e) => { if (keys.has(e.dataset.key)) els.set(e.dataset.key, e); else e.remove(); });
+  let prev = null;
   for (const [key, r] of rows) {
     let el = els.get(key);
     if (!el) {
       el = document.createElement('div'); el.dataset.key = key;
       el.innerHTML = `<div class="t1"><span class="dir ${r.dir === 'down' ? 'down' : ''}">${r.dir === 'down' ? '↓' : '↑'}</span><span class="nm"></span><span class="pct"></span></div><div class="bar"><div></div></div><div class="t2"><span class="a"></span><span class="b"></span></div>`;
-      list.appendChild(el);
     }
+    const ref = prev ? prev.nextSibling : list.firstChild;
+    if (ref !== el) list.insertBefore(el, ref);
+    prev = el;
     const p = r.size ? r.done / r.size : 1;
     const secs = (performance.now() - r.t0) / 1000;
-    const speed = secs > 0.3 ? r.done / secs : 0;
-    el.className = 'tx-row ' + (r.state === 'done' ? 'done' : r.state === 'fail' ? 'fail' : '');
+    const speed = secs > 0.3 ? (r.done - (r.base || 0)) / secs : 0;
+    const canOpen = r.state === 'done' && S.items.has(r.id);
+    el.dataset.id = canOpen ? r.id : '';
+    el.className = 'tx-row ' + ({ done: 'done', fail: 'fail', paused: 'paused' }[r.state] || '') + (canOpen ? ' click' : '');
     $('.nm', el).textContent = r.name;
-    $('.pct', el).textContent = r.state === 'fail' ? 'gagal' : r.state === 'done' ? '✓' : Math.floor(p * 100) + '%';
+    $('.pct', el).textContent = r.state === 'fail' ? 'gagal' : r.state === 'paused' ? '⏸' : r.state === 'done' ? '✓' : Math.floor(p * 100) + '%';
     $('.bar>div', el).style.width = (p * 100).toFixed(1) + '%';
     $('.a', el).textContent = `${fmtSize(r.done)} / ${fmtSize(r.size)}`;
-    $('.b', el).textContent = r.state === 'fail' ? 'dicoba lagi saat tersambung' : (r.dir === 'down' ? 'dari ' : 'ke ') + (r.who || 'teman') + (speed && r.state === 'run' ? ' · ' + fmtSize(speed) + '/s' : '');
+    $('.b', el).textContent = r.state === 'paused' ? 'terputus · lanjut otomatis' : r.state === 'fail' ? 'gagal' : r.state === 'done' ? (r.dir === 'down' ? 'diterima dari ' + (r.who || 'teman') + ' · tap untuk buka' : 'terkirim ke ' + (r.who || 'teman')) : (r.dir === 'down' ? 'dari ' : 'ke ') + (r.who || 'teman') + (speed > 0 ? ' · ' + fmtSize(speed) + '/s' : '');
   }
 }
 function updateIncomingUI(id) {
   const x = S.incoming.get(id); if (!x) return;
   const p = x.size ? x.got / x.size : 0;
-  const ring = document.querySelector(`[data-ring="${cssq(id)}"] .fg`);
-  if (ring) ring.setAttribute('stroke-dashoffset', 2 * Math.PI * 19 * (1 - p));
-  const pct = document.querySelector(`[data-pct="${cssq(id)}"]`);
-  if (pct) pct.textContent = Math.floor(p * 100) + '%';
+  document.querySelectorAll(`[data-ring="${cssq(id)}"] .fg`).forEach((ring) => ring.setAttribute('stroke-dashoffset', 2 * Math.PI * 19 * (1 - p)));
+  if (!x.paused) document.querySelectorAll(`[data-pct="${cssq(id)}"]`).forEach((pct) => { pct.textContent = Math.floor(p * 100) + '%'; });
 }
 
 // ---------------- Items ----------------
@@ -526,8 +618,9 @@ function addItem(it, persist = true) {
   render();
   return it;
 }
+// Hanya untuk file MILIK SENDIRI ("Stop bagikan"). File yang diterima dari teman TIDAK PERNAH dihapus otomatis.
 function deleteItem(id) {
-  const it = S.items.get(id); if (!it) return;
+  const it = S.items.get(id); if (!it || it.owner !== S.uid) return;
   S.items.delete(id);
   setTimeout(() => URL.revokeObjectURL(it.url), 1500);
   if (S.room) DB.del(S.room, id);
@@ -535,6 +628,16 @@ function deleteItem(id) {
     const idx = S.viewList.indexOf(id);
     if (idx >= 0) { S.viewList.splice(idx, 1); if (!S.viewList.length) closeViewer(); else showView(Math.min(idx, S.viewList.length - 1)); }
   }
+  render();
+}
+// Pemilik berhenti membagikan: salinan yang SUDAH diterima penuh tetap disimpan (ditandai saja);
+// yang belum selesai diterima dibatalkan.
+function onOwnerUnshare(id, ownerUid) {
+  const it = S.items.get(id);
+  if (it && it.owner === ownerUid && !it.unshared) { it.unshared = true; if (S.room) DB.put(S.room, it); }
+  const pa = S.partial.get(id); if (pa && pa.owner === ownerUid) S.partial.delete(id);
+  const inc = S.incoming.get(id); if (inc && inc.owner === ownerUid) { S.incoming.delete(id); tend('down:' + id, false); }
+  for (const c of S.conns.values()) for (const [tid, rx] of c.rx) if (rx.id === id && c.uid === ownerUid) c.rx.delete(tid);
   render();
 }
 const meta = (it) => ({ id: it.id, name: it.name, type: it.type, size: it.size, ts: it.ts });
@@ -547,7 +650,6 @@ function onPick(files) {
     metas.push(meta(it));
   });
   toast(`${files.length} file siap dibagikan` + (openConns().length ? '' : ' — terkirim saat teman tersambung'));
-  if (S.album == null) openAlbum(S.uid); else if (S.album === S.uid) renderGrid();
   for (const c of openConns()) sendJ(c, { t: 'offer', items: metas });
 }
 function removeMine(id) {
@@ -559,7 +661,7 @@ function removeMine(id) {
     if (c.open) sendJ(c, { t: 'remove', id });
   }
   deleteItem(id);
-  toast('Dihapus dari berbagi');
+  toast('Berhenti dibagikan. Teman yang sudah menerima tetap menyimpan salinannya.');
 }
 
 // ---------------- Jaringan: PeerJS signaling + WebRTC DataChannel (raw) ----------------
@@ -643,10 +745,16 @@ function onClose(C, silent) {
   if (C.closed) return; C.closed = true;
   const was = C.open; C.open = false; C.pending = false;
   for (const [k, c] of S.conns) if (c === C) S.conns.delete(k);
-  for (const rx of C.rx.values()) { S.incoming.delete(rx.id); tend(rx.key, false); }
+  // transfer yang terputus disimpan untuk dilanjutkan (bukan dihapus)
+  for (const rx of C.rx.values()) {
+    const inc = S.incoming.get(rx.id);
+    if (rx.got > 0 && !rx.skip) { S.partial.set(rx.id, { id: rx.id, owner: C.uid, name: rx.name, type: rx.type, size: rx.size, ts: rx.ts, parts: rx.parts, got: rx.got }); if (inc) inc.paused = true; tend(rx.key, 'paused'); }
+    else { S.incoming.delete(rx.id); tend(rx.key, 'paused'); }
+  }
   C.rx.clear();
+  for (const [k, r] of S.tx) if (r.state === 'run' && r.dir === 'up' && r.peer === C.uid) tend(k, 'paused');
   if (C.cur) C.cur.abort = true;
-  if (silent) return;
+  if (silent) { render(); return; }
   if (was && C.uid && !openConns().some((o) => o.uid === C.uid)) toast((S.names[C.uid] || 'Teman') + ' terputus');
   render();
   // tamu: sambung ulang ke host
@@ -663,7 +771,7 @@ function onData(C, d) {
     case 'hello': {
       if (m.uid === S.uid) { toast('Room ini sudah terbuka di tab lain di perangkat ini'); try { C.conn.close(); } catch {} return; }
       for (const o of [...S.conns.values()]) if (o !== C && o.uid === m.uid) { try { o.conn.close(); } catch {} onClose(o, true); }
-      const first = !C.uid; C.uid = String(m.uid);
+      const first = !C.uid; C.uid = String(m.uid); S.stats.hellos = (S.stats.hellos || 0) + 1;
       if (m.name) { S.names[C.uid] = String(m.name).slice(0, 24); ls.set('hd.names', S.names); }
       S.everConnected = true; S.failCount = 0; S.backoff = 1500; clearRetry();
       if (first) { toast((S.names[C.uid] || 'Teman') + ' terhubung 🎉'); if (navigator.vibrate) navigator.vibrate(30); }
@@ -676,45 +784,86 @@ function onData(C, d) {
     case 'manifest':
     case 'offer': {
       if (!C.uid) return;
-      if (m.removed) for (const id of m.removed) { const it = S.items.get(id); if (it && it.owner === C.uid) deleteItem(id); }
-      const want = [];
+      // file yang SUDAH diterima tidak pernah dihapus karena daftar pengirim berubah/lebih kecil
+      if (m.removed) for (const id of m.removed) onOwnerUnshare(String(id), C.uid);
+      const listed = new Set();
+      const want = [], from = {};
       for (const x of m.items || []) {
-        if (!x || !x.id || S.items.has(x.id) || S.incoming.has(x.id) || C.wanted.has(x.id)) continue;
-        C.wanted.add(x.id); want.push(x.id);
+        if (!x || !x.id) continue;
+        const id = String(x.id); listed.add(id);
+        if (S.items.has(id) || C.wanted.has(id)) continue;
+        const inc = S.incoming.get(id);
+        if (inc && !inc.paused) continue;                 // sedang diterima lewat koneksi lain
+        const pa = S.partial.get(id);
+        if (pa && pa.owner === C.uid) from[id] = pa.got;  // lanjutkan dari offset terakhir
+        C.wanted.add(id); want.push(id);
       }
-      if (want.length) sendJ(C, { t: 'want', ids: want });
+      // potongan yang belum selesai & tidak ada lagi di daftar pengirim → batalkan (yang sudah lengkap tetap aman)
+      if (m.t === 'manifest') for (const [id, pa] of [...S.partial]) if (pa.owner === C.uid && !listed.has(id)) { S.partial.delete(id); S.incoming.delete(id); tend('down:' + id, false); }
+      if (want.length) sendJ(C, { t: 'want', ids: want, from });
+      render();
       break;
     }
-    case 'want': for (const id of m.ids || []) { const it = S.items.get(id); if (it && it.owner === S.uid && !C.queue.includes(id)) C.queue.push(id); } pump(C); break;
+    case 'want': {
+      C.from = C.from || {};
+      for (const id of m.ids || []) { const it = S.items.get(id); if (it && it.owner === S.uid) { if (!C.queue.includes(id)) C.queue.push(id); C.from[id] = Math.max(0, +((m.from || {})[id]) || 0); } }
+      pump(C); break;
+    }
     case 'fstart': {
       if (!C.uid) return;
-      const key = 'down:' + C.conn.connectionId + ':' + m.id;
-      const name = String(m.name || 'file'), size = Math.max(0, +m.size || 0);
-      C.rx.set(m.tid, { tid: m.tid, id: String(m.id), name, type: String(m.type || ''), size, ts: +m.ts || Date.now(), parts: [], got: 0, key });
-      S.incoming.set(String(m.id), { id: String(m.id), name, size, type: m.type, owner: C.uid, got: 0 });
-      tset(key, { dir: 'down', name, size, who: S.names[C.uid] || 'teman' });
+      const id = String(m.id), key = 'down:' + id;
+      const name = String(m.name || 'file'), size = Math.max(0, +m.size || 0), off = Math.max(0, +m.off || 0);
+      if (S.items.has(id)) { C.rx.set(m.tid, { tid: m.tid, id, skip: true, parts: [], got: 0, key }); return; }
+      const pa = S.partial.get(id);
+      let parts = [], got = 0;
+      if (off > 0) {
+        if (pa && pa.owner === C.uid && pa.got === off) { parts = pa.parts; got = pa.got; S.stats.resumed++; }
+        else { C.rx.set(m.tid, { tid: m.tid, id, skip: true, parts: [], got: 0, key }); C.wanted.delete(id); sendJ(C, { t: 'want', ids: [id], from: { [id]: 0 } }); C.wanted.add(id); return; }
+      }
+      S.partial.delete(id);
+      C.rx.set(m.tid, { tid: m.tid, id, name, type: String(m.type || ''), size, ts: +m.ts || Date.now(), parts, got, key });
+      S.incoming.set(id, { id, name, size, type: m.type, owner: C.uid, got, paused: false });
+      tset(key, { dir: 'down', id, name, size, done: got, who: S.names[C.uid] || 'teman', peer: C.uid });
       render();
       break;
     }
     case 'fend': {
       const rx = C.rx.get(m.tid); if (!rx) return;
-      C.rx.delete(m.tid); S.incoming.delete(rx.id); C.wanted.delete(rx.id);
+      C.rx.delete(m.tid);
+      if (rx.skip) return;
+      C.wanted.delete(rx.id);
       const blob = new Blob(rx.parts, { type: rx.type });
       rx.parts = null;
-      if (blob.size !== rx.size) { console.warn('size mismatch', blob.size, rx.size); tend(rx.key, false); render(); return; }
-      addItem({ id: rx.id, owner: C.uid, name: rx.name, type: rx.type, size: rx.size, ts: rx.ts, blob });
+      if (blob.size !== rx.size) {
+        console.warn('size mismatch', blob.size, rx.size);
+        const n = (S.retries.get(rx.id) || 0) + 1; S.retries.set(rx.id, n);
+        if (n <= 3) { const inc = S.incoming.get(rx.id); if (inc) { inc.got = 0; } C.wanted.add(rx.id); sendJ(C, { t: 'want', ids: [rx.id], from: { [rx.id]: 0 } }); }
+        else { S.incoming.delete(rx.id); tend(rx.key, false); toast('Gagal menerima ' + rx.name); }
+        render(); return;
+      }
+      S.incoming.delete(rx.id); S.retries.delete(rx.id);
+      addItem({ id: rx.id, owner: C.uid, ownerName: S.names[C.uid] || '', name: rx.name, type: rx.type, size: rx.size, ts: rx.ts, rts: Date.now(), blob });
+      if (!(S.album != null && inAlbum(C.uid, S.album))) S.unseen.set(C.uid, (S.unseen.get(C.uid) || 0) + 1);
       tend(rx.key, true);
       sendJ(C, { t: 'got', id: rx.id });
+      toast('📥 ' + rx.name + ' diterima dari ' + (S.names[C.uid] || 'teman'));
+      render();
       break;
     }
-    case 'fabort': { const rx = C.rx.get(m.tid); if (rx) { C.rx.delete(m.tid); S.incoming.delete(rx.id); C.wanted.delete(rx.id); tend(rx.key, false); render(); } break; }
+    case 'fabort': {
+      const rx = C.rx.get(m.tid); if (!rx) break;
+      C.rx.delete(m.tid); if (rx.skip) break;
+      C.wanted.delete(rx.id);
+      // simpan potongan supaya bisa dilanjutkan; kalau file dihentikan pemiliknya, pesan 'remove' yang membersihkan
+      if (rx.got > 0) { S.partial.set(rx.id, { id: rx.id, owner: C.uid, name: rx.name, type: rx.type, size: rx.size, ts: rx.ts, parts: rx.parts, got: rx.got }); const inc = S.incoming.get(rx.id); if (inc) inc.paused = true; tend(rx.key, 'paused'); }
+      else { S.incoming.delete(rx.id); tend(rx.key, false); }
+      render();
+      break;
+    }
     case 'got': { const it = S.items.get(m.id); if (it && C.uid) { it.delivered.add(C.uid); const ok = document.querySelector(`[data-ok="${cssq(m.id)}"]`); if (ok) ok.classList.remove('hidden'); } break; }
     case 'remove': {
-      // keamanan: hanya pemilik foto yang boleh menghapus fotonya sendiri
-      const it = S.items.get(m.id);
-      if (it && it.owner === C.uid) deleteItem(m.id);
-      for (const [tid, rx] of C.rx) if (rx.id === m.id) { C.rx.delete(tid); S.incoming.delete(rx.id); tend(rx.key, false); }
-      render();
+      // hanya pemilik yang bisa berhenti membagikan; salinan yang sudah lengkap tetap tersimpan di HP ini
+      onOwnerUnshare(String(m.id), C.uid);
       break;
     }
     case 'ping': sendJ(C, { t: 'pong' }); break;
@@ -722,7 +871,7 @@ function onData(C, d) {
 }
 function onChunk(C, buf) {
   if (!(buf instanceof ArrayBuffer) || buf.byteLength < 4) return;
-  const rx = C.rx.get(new DataView(buf).getUint32(0)); if (!rx) return;
+  const rx = C.rx.get(new DataView(buf).getUint32(0)); if (!rx || rx.skip) return;
   rx.parts.push(new Uint8Array(buf, 4));
   rx.got += buf.byteLength - 4;
   const inc = S.incoming.get(rx.id); if (inc) inc.got = rx.got;
@@ -749,10 +898,12 @@ async function pump(C) {
       const payload = max - 4;
       const tid = ++S.tidSeq;
       C.cur = { id, tid, abort: false };
-      const key = 'up:' + C.conn.connectionId + ':' + id;
-      tset(key, { dir: 'up', name: it.name, size: it.size, who: S.names[C.uid] || 'teman' });
-      sendJ(C, { t: 'fstart', tid, id, name: it.name, type: it.type, size: it.size, ts: it.ts });
-      let off = 0, ok = true;
+      const key = 'up:' + C.uid + ':' + id;
+      const off0 = Math.min(it.size, (C.from && C.from[id]) || 0);
+      if (C.from) delete C.from[id];
+      tset(key, { dir: 'up', id, name: it.name, size: it.size, done: off0, who: S.names[C.uid] || 'teman', peer: C.uid });
+      sendJ(C, { t: 'fstart', tid, id, name: it.name, type: it.type, size: it.size, ts: it.ts, off: off0 });
+      let off = off0, ok = true;
       try {
         while (off < it.size && ok) {
           const slab = new Uint8Array(await it.blob.slice(off, Math.min(off + SLAB, it.size)).arrayBuffer());
@@ -773,7 +924,7 @@ async function pump(C) {
       if (ok) { sendJ(C, { t: 'fend', tid, id }); C.queue.shift(); tend(key, true); }
       else {
         if (C.open) sendJ(C, { t: 'fabort', tid, id });
-        tend(key, gone);
+        tend(key, gone ? false : 'paused');
         if (gone) C.queue.shift(); else { C.cur = null; break; }
       }
       C.cur = null;
@@ -784,7 +935,7 @@ async function pump(C) {
 setInterval(() => {
   for (const C of [...S.conns.values()]) {
     if (!C.open) continue;
-    if (Date.now() - C.lastSeen > 25000) { try { C.conn.close(); } catch {} onClose(C); continue; }
+    if (Date.now() - C.lastSeen > (S.hbTimeout || 30000)) { try { C.conn.close(); } catch {} onClose(C); continue; }
     sendJ(C, { t: 'ping' });
   }
   if (S.room && S.peer && !S.peer.destroyed && !S.isHost && S.peer.open && !openConns().length && !S.retryT && ![...S.conns.values()].some((c) => c.pending)) connectTo(hostId(S.room));
@@ -805,17 +956,22 @@ async function enterRoom(code) {
   setStatus('warn', 'Menghubungkan…');
   render();
   requestWake();
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch {}
   if (S.cache) {
     const recs = (await DB.list(code)) || [];
     if (S.room !== code) return;
-    recs.sort((a, b) => a.ts - b.ts).forEach((r) => { if (r.blob && !S.tomb.has(r.id)) addItem({ id: r.id, owner: r.owner, name: r.name, type: r.type, size: r.size, ts: r.ts, blob: r.blob }, false); });
+    recs.sort((a, b) => a.ts - b.ts).forEach((r) => {
+      if (!r.blob || (r.owner === S.uid && S.tomb.has(r.id))) return;
+      if (r.ownerName && !S.names[r.owner]) S.names[r.owner] = r.ownerName;
+      addItem({ id: r.id, owner: r.owner, ownerName: r.ownerName, name: r.name, type: r.type, size: r.size, ts: r.ts, rts: r.rts, unshared: r.unshared, blob: r.blob }, false);
+    });
   }
   startPeer('host');
 }
 function leaveRoom() {
   destroyPeer();
   for (const it of S.items.values()) URL.revokeObjectURL(it.url);
-  S.items.clear(); S.incoming.clear(); S.tx.clear(); renderTx();
+  S.items.clear(); S.incoming.clear(); S.partial.clear(); S.unseen.clear(); S.tx.clear(); renderTx();
   S.room = null; S.album = null;
   history.replaceState(null, '', location.pathname);
   releaseWake();
@@ -832,9 +988,9 @@ async function requestWake() { try { if ('wakeLock' in navigator && !S.wake && d
 function releaseWake() { try { S.wake && S.wake.release(); } catch {} S.wake = null; }
 
 // ---------------- Viewer + Simpan ----------------
-function openViewer(id) {
+function openViewer(id, list) {
   const it = S.items.get(id); if (!it) return;
-  S.viewList = itemsOf(it.owner).map((x) => x.id);
+  S.viewList = (list && list.includes(id)) ? list : itemsOf(it.owner).map((x) => x.id);
   $('#viewer').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   showView(S.viewList.indexOf(id));
@@ -850,8 +1006,8 @@ function showView(i) {
   $('#vPos').textContent = S.viewList.length > 1 ? `${i + 1}/${S.viewList.length}` : '';
   $('#vRemove').classList.toggle('hidden', it.owner !== S.uid);
   $('#vNote').textContent = it.owner === S.uid
-    ? '“Stop bagikan” menghapusnya dari galeri bersama. File asli di galeri HP kamu tetap aman.'
-    : 'File asli, kualitas penuh. Di iPhone: Simpan → “Simpan Gambar / Simpan Video” agar masuk ke app Foto.';
+    ? '“Stop bagikan” = berhenti mengirim ke teman yang belum menerima. Teman yang sudah menerima tetap menyimpan salinannya. File asli di galeri HP kamu tetap aman.'
+    : (it.unshared ? 'Pemilik sudah berhenti membagikan file ini, tapi salinan yang sudah kamu terima tetap tersimpan. ' : '') + 'File asli, kualitas penuh. Di iPhone: Simpan → “Simpan Gambar / Simpan Video” agar masuk ke app Foto.';
 }
 function closeViewer() { $('#viewer').classList.add('hidden'); $('#vStage').innerHTML = ''; document.body.style.overflow = ''; }
 function step(d) { if (S.viewList.length < 2) return; showView((S.viewIdx + d + S.viewList.length) % S.viewList.length); }
@@ -899,7 +1055,7 @@ function openQR() {
   const url = shareUrl();
   const png = qrPng(url);
   openModal(`<h3 style="text-align:center">Scan untuk gabung</h3>
-    ${png ? `<div class="qrbox"><img id="qrImg" src="${png}" alt="QR join room ${esc(S.room)}" data-url="${esc(url)}"><div class="qcap">HD Gallery · Room ${esc(S.room)}</div></div>` : '<div class="empty">QR tidak tersedia (library gagal dimuat). Pakai link / kode di bawah.</div>'}
+    ${png ? `<div class="qrbox"><img id="qrImg" src="${png}" alt="QR join room ${esc(S.room)}" data-url="${esc(url)}"><div class="qcap">Hyper Direct · Room ${esc(S.room)}</div></div>` : '<div class="empty">QR tidak tersedia (library gagal dimuat). Pakai link / kode di bawah.</div>'}
     <div style="text-align:center;margin-bottom:10px"><div class="rlabel">KODE ROOM</div><div class="rcode" style="font-size:24px">${esc(S.room)}</div></div>
     <div class="linkbox">${esc(url)}</div>
     <div class="row" style="margin-top:12px"><button class="btn ghost" style="flex:1" id="qrCopy">Salin link</button><button class="btn primary" style="flex:1" id="qrClose">Selesai</button></div>
@@ -1050,11 +1206,15 @@ $('#copyBtn').onclick = copyLink; $('#qrBtn').onclick = openQR; $('#shareBtn').o
 $('#fileIn').addEventListener('change', (e) => { const files = [...e.target.files]; e.target.value = ''; onPick(files); });
 $('#albums').addEventListener('click', (e) => { const b = e.target.closest('[data-album]'); if (b) openAlbum(b.dataset.album); });
 $('#backBtn').onclick = closeAlbum;
-$('#grid').addEventListener('click', (e) => { const t = e.target.closest('.tile[data-id]'); if (t) openViewer(t.dataset.id); });
+$('#grid').addEventListener('click', (e) => { const t = e.target.closest('.tile[data-id]'); if (t) openViewer(t.dataset.id, itemsOf(S.album).map((x) => x.id)); });
+$('#allGrid').addEventListener('click', (e) => { const t = e.target.closest('.tile[data-id]'); if (t) openViewer(t.dataset.id, allItems().map((x) => x.id)); });
+$('#txList').addEventListener('click', (e) => { const r = e.target.closest('.tx-row.click'); if (r && r.dataset.id) openViewer(r.dataset.id, allItems().map((x) => x.id)); });
+$('#txClear').onclick = () => { for (const [k, r] of [...S.tx]) if (r.state === 'done' || r.state === 'fail') S.tx.delete(k); renderTx(); };
+$('#avNotice').onclick = (e) => openAlbum(e.currentTarget.dataset.album || FRIENDS);
 $('#saveAllBtn').onclick = () => saveItems(itemsOf(S.album));
 $('#vClose').onclick = closeViewer;
 $('#vSave').onclick = () => { const it = S.items.get(S.viewList[S.viewIdx]); if (it) saveItems([it]); };
-$('#vRemove').onclick = () => { const id = S.viewList[S.viewIdx]; if (confirm('Stop bagikan file ini? File akan hilang dari galeri bersama (file asli di HP kamu tetap aman).')) removeMine(id); };
+$('#vRemove').onclick = () => { const id = S.viewList[S.viewIdx]; if (confirm('Stop bagikan file ini?\n\nFile berhenti dikirim ke teman yang belum menerimanya. Teman yang SUDAH menerima tetap menyimpan salinannya. File asli di galeri HP kamu tetap aman.')) removeMine(id); };
 $('#vStage').addEventListener('click', (e) => { if (e.target.closest('.prev')) step(-1); else if (e.target.closest('.next')) step(1); });
 let t0 = null;
 $('#vStage').addEventListener('touchstart', (e) => { if (e.touches.length === 1) t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
@@ -1071,6 +1231,8 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && SC.stream) stopScanner();
   if (document.visibilityState !== 'visible' || !S.room) return;
+  // timer berhenti saat layar terkunci → jangan anggap koneksi mati hanya karena itu
+  for (const C of S.conns.values()) C.lastSeen = Date.now();
   requestWake();
   // iPhone sering memutus koneksi saat Safari di background → sambung lagi otomatis
   if (!S.peer || S.peer.destroyed) startPeer('host');
@@ -1089,12 +1251,22 @@ window.__hd = {
   list() { return [...S.items.values()].map((i) => ({ id: i.id, name: i.name, size: i.size, type: i.type, mine: i.owner === S.uid, delivered: i.delivered.size })); },
   connected() { return openConns().length; },
   role() { return S.isHost ? 'host' : 'guest'; },
-  shareUrl, codeFromQR
+  shareUrl, codeFromQR,
+  restartPeer() { startPeer('host'); },
+  stats: S.stats,
+  visible() { return [...document.querySelectorAll('#allGrid .tile[data-id]')].map((e) => e.dataset.id); },
+  partial() { return [...S.partial.values()].map((p) => ({ id: p.id, got: p.got, size: p.size })); }
 };
 
+function hideLanding(instant) {
+  const l = $('#landing'); if (!l || l.classList.contains('hidden')) return;
+  if (instant) { l.classList.add('hidden'); return; }
+  l.classList.add('out'); setTimeout(() => l.classList.add('hidden'), 460);
+}
+$('#startBtn').onclick = () => hideLanding(false);
 initHome();
 const qRoom = normCode(new URLSearchParams(location.search).get('room'));
-if (qRoom.length >= 4) enterRoom(qRoom);
+if (qRoom.length >= 4) { hideLanding(true); enterRoom(qRoom); }   // join via QR/link: langsung masuk, tanpa splash
 })();
 </script>
 </body>

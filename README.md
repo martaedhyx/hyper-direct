@@ -15,7 +15,9 @@ Kirim foto & video **langsung HP ke HP** (WebRTC P2P), kualitas asli, tanpa serv
 - File dipotong 64 KB, backpressure via `RTCDataChannel.bufferedAmount` (jeda > 1 MB, lanjut < 256 KB).
 - Sinkronisasi manifest saat (re)connect: file yang belum diterima dikirim ulang otomatis.
 - Cache lokal di IndexedDB browser (opsional) agar reload tidak menghilangkan foto. Tidak ada upload ke server.
-- Hanya pemilik foto yang bisa menghentikan pembagian fotonya; pesan hapus dari orang lain diabaikan.
+- Album dikunci dengan ID perangkat yang stabil (localStorage) + nama, bukan PeerJS id; file yang sudah diterima penuh **tidak pernah dihapus otomatis** (reconnect, timeout, reload pengirim, dll.).
+- “Stop bagikan” oleh pemilik: berhenti mengirim ke yang belum menerima; salinan yang sudah diterima penuh tetap disimpan penerima (ditandai). Transfer yang terputus dilanjutkan dari posisi terakhir.
+- Hanya pemilik foto yang bisa menghentikan pembagian fotonya; pesan dari orang lain diabaikan.
 
 ## Batasan
 - Kedua HP harus tetap membuka halaman selama transfer (Safari di background memutus koneksi; akan tersambung lagi otomatis saat dibuka).
