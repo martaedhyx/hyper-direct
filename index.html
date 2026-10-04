@@ -64,6 +64,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .field{width:100%;height:50px;border-radius:15px;background:#0b1529;border:1px solid var(--line);color:var(--text);padding:0 16px;font-size:16px;outline:none}
 .field:focus{border-color:rgba(34,211,238,.6)}
 .code-in{text-transform:uppercase;letter-spacing:6px;font-weight:800;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;font-size:20px}
+.code-in::placeholder{letter-spacing:.5px;font-weight:600;font-size:15px;text-transform:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#64748b}
 .help{margin-top:14px;color:var(--muted);font-size:12.5px;line-height:1.55}
 .help b{color:#cbd5e1}
 .steps{margin:0;padding:0;list-style:none;display:grid;gap:10px}
@@ -142,8 +143,22 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .switch{position:relative;width:52px;height:32px;flex:none;border-radius:99px;background:#334155;transition:background .2s}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s}
 .switch.on{background:var(--cyan)}.switch.on::after{transform:translateX(20px)}
-.qrbox{background:#fff;border-radius:20px;padding:14px;width:min(78vw,300px);margin:6px auto 12px}
-.qrbox svg{width:100%;height:auto;display:block}
+.qrbox{background:#fff;border-radius:22px;padding:10px;width:min(86vw,340px);margin:6px auto 12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.qrbox img{width:100%;height:auto;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.qrbox .qcap{color:#0a1324;text-align:center;font-weight:800;font-size:13px;padding:2px 0 6px;letter-spacing:.2px}
+.scan-btn{margin-top:10px}
+.scanner{position:fixed;inset:0;z-index:70;background:#000;display:flex;flex-direction:column;animation:fade .18s ease}
+.scanner .s-top{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;color:#fff}
+.scanner .s-top b{flex:1;font-size:16px}
+.scanner .s-stage{position:relative;flex:1;min-height:0;overflow:hidden;display:grid;place-items:center}
+.scanner video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scanner .s-frame{position:relative;width:min(72vw,300px);aspect-ratio:1/1;border-radius:26px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);border:3px solid rgba(34,211,238,.9)}
+.scanner .s-frame::after{content:"";position:absolute;left:8%;right:8%;top:10%;height:2px;background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:scanline 2s ease-in-out infinite}
+@keyframes scanline{0%,100%{top:10%}50%{top:88%}}
+.scanner .s-msg{position:absolute;left:16px;right:16px;bottom:18px;text-align:center;color:#e6edf7;font-size:13.5px;line-height:1.5;text-shadow:0 1px 3px #000}
+.scanner .s-err{margin:auto 18px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;color:var(--text);font-size:14px;line-height:1.55;max-width:420px}
+.scanner .s-bottom{padding:12px 16px calc(env(safe-area-inset-bottom) + 16px);display:flex;gap:10px;background:#000}
+.scanner .s-bottom .field{flex:1}
 .linkbox{font-size:12.5px;color:#cbd5e1;background:#0b1529;border:1px solid var(--line);border-radius:12px;padding:10px 12px;word-break:break-all;text-align:center}
 .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);transform:translateX(-50%) translateY(-20px);opacity:0;z-index:80;background:#e6edf7;color:#0a1324;font-weight:700;font-size:13.5px;padding:11px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:all .25s;max-width:88vw;text-align:center;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -201,6 +216,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
         <input class="field code-in" id="codeIn" maxlength="6" placeholder="ABC123" autocomplete="off" autocapitalize="characters" spellcheck="false">
         <button class="btn primary" id="joinBtn">Gabung</button>
       </div>
+      <button class="btn ghost block scan-btn" id="scanBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>Scan QR dari HP teman</button>
     </div>
     <button class="acard hidden" id="resumeBtn" style="margin-top:14px;min-height:0;flex-direction:row;align-items:center;gap:14px">
       <div class="ic green" style="margin:0;width:46px;height:46px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div>
@@ -278,6 +294,12 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
   </div>
 </div>
 
+<div class="scanner hidden" id="scanner">
+  <div class="s-top"><button class="iconbtn" id="scanClose" aria-label="Tutup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button><b>Scan QR room</b></div>
+  <div class="s-stage" id="scanStage"><video id="scanVideo" playsinline muted autoplay></video><div class="s-frame" id="scanFrame"></div><div class="s-msg" id="scanMsg">Arahkan kamera ke QR di HP temanmu</div></div>
+  <div class="s-bottom"><input class="field code-in" id="scanCode" maxlength="6" placeholder="atau ketik kode room" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn primary" id="scanJoin">Gabung</button></div>
+</div>
+
 <div class="modal hidden" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
@@ -343,7 +365,13 @@ let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
 function ownerName(uid) { return uid === S.uid ? 'Saya' : (S.names[uid] || 'Teman'); }
 function albumTitle(uid) { return uid === S.uid ? 'Foto Saya' : (S.names[uid] ? 'Foto ' + S.names[uid] : 'Foto Teman'); }
-function shareUrl() { return location.origin + location.pathname + '?room=' + S.room; }
+// Link resmi (repo sudah di-rename ke hyper-direct). Di localhost dipakai alamat halaman saat ini.
+const CANONICAL = 'https://martaedhyx.github.io/hyper-direct/';
+function baseUrl() {
+  if (/(^|\.)github\.io$/i.test(location.hostname)) return CANONICAL;
+  return location.origin + location.pathname.replace(/index\.html$/i, '');
+}
+function shareUrl() { return baseUrl() + '?room=' + S.room; }
 function openConns() { return [...S.conns.values()].filter((c) => c.open && c.uid); }
 
 function setStatus(kind, text, hint = '') {
@@ -869,16 +897,129 @@ function setName(v) {
 }
 function openQR() {
   const url = shareUrl();
-  let svg = '';
-  try { const q = qrcode(0, 'M'); q.addData(url); q.make(); svg = q.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); } catch { svg = ''; }
+  const png = qrPng(url);
   openModal(`<h3 style="text-align:center">Scan untuk gabung</h3>
-    ${svg ? `<div class="qrbox">${svg}</div>` : '<div class="empty">QR tidak tersedia (library gagal dimuat). Pakai link di bawah.</div>'}
+    ${png ? `<div class="qrbox"><img id="qrImg" src="${png}" alt="QR join room ${esc(S.room)}" data-url="${esc(url)}"><div class="qcap">HD Gallery · Room ${esc(S.room)}</div></div>` : '<div class="empty">QR tidak tersedia (library gagal dimuat). Pakai link / kode di bawah.</div>'}
     <div style="text-align:center;margin-bottom:10px"><div class="rlabel">KODE ROOM</div><div class="rcode" style="font-size:24px">${esc(S.room)}</div></div>
     <div class="linkbox">${esc(url)}</div>
     <div class="row" style="margin-top:12px"><button class="btn ghost" style="flex:1" id="qrCopy">Salin link</button><button class="btn primary" style="flex:1" id="qrClose">Selesai</button></div>
-    <div class="help" style="text-align:center">Buka Kamera iPhone teman → arahkan ke QR → tap link yang muncul.</div>`);
+    <div class="help" style="text-align:center">Di HP teman: buka <b>Kamera</b> iPhone → arahkan ke QR → tap link kuning yang muncul. Atau di app ini: <b>Gabung Room → Scan QR</b>. Tips: naikkan kecerahan layar HP ini.</div>`);
   $('#qrCopy').onclick = copyLink; $('#qrClose').onclick = closeModal;
 }
+// QR tajam: PNG hitam di atas putih, quiet zone 4 modul, error correction M, modul >= 10 px
+function qrPng(text) {
+  try {
+    const q = qrcode(0, 'M'); q.addData(text, 'Byte'); q.make();
+    const n = q.getModuleCount(), quiet = 4, cell = 12, size = (n + quiet * 2) * cell;
+    const c = document.createElement('canvas'); c.width = c.height = size;
+    const x = c.getContext('2d');
+    x.fillStyle = '#ffffff'; x.fillRect(0, 0, size, size);
+    x.fillStyle = '#000000';
+    for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) x.fillRect((k + quiet) * cell, (r + quiet) * cell, cell, cell);
+    return c.toDataURL('image/png');
+  } catch (e) { console.warn('qr', e); return ''; }
+}
+
+// ---------------- Scanner QR di dalam app (iPhone Safari: getUserMedia + jsQR) ----------------
+const JSQR_SRC = ['https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js', 'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];
+let jsqrP = null;
+function loadJsQR() {
+  if (window.jsQR) return Promise.resolve(window.jsQR);
+  if (jsqrP) return jsqrP;
+  jsqrP = (async () => {
+    for (const src of JSQR_SRC) {
+      try { await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = src; sc.async = true; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); }); if (window.jsQR) return window.jsQR; } catch {}
+    }
+    jsqrP = null; throw new Error('jsQR gagal dimuat');
+  })();
+  return jsqrP;
+}
+// ambil kode room dari isi QR: link ...?room=CODE atau kode polos
+function codeFromQR(text) {
+  const t = String(text || '').trim();
+  try { const u = new URL(t); const r = normCode(u.searchParams.get('room')); if (r.length >= 4) return r; } catch {}
+  const m = t.match(/[?&]room=([A-Za-z0-9]{4,6})/); if (m) return normCode(m[1]);
+  if (/^[A-Za-z0-9]{4,6}$/.test(t)) return normCode(t);
+  return '';
+}
+const SC = { stream: null, raf: 0, busy: false, canvas: null, last: 0, detector: null };
+function scanMsg(html, isErr) {
+  const stage = $('#scanStage');
+  if (isErr) { $('#scanVideo').classList.add('hidden'); $('#scanFrame').classList.add('hidden'); $('#scanMsg').classList.add('hidden'); let e = $('.s-err', stage); if (!e) { e = document.createElement('div'); e.className = 's-err'; stage.appendChild(e); } e.innerHTML = html; }
+  else $('#scanMsg').innerHTML = html;
+}
+async function openScanner() {
+  const sc = $('#scanner');
+  sc.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+  const old = $('.s-err', sc); if (old) old.remove();
+  ['#scanVideo', '#scanFrame', '#scanMsg'].forEach((q) => $(q).classList.remove('hidden'));
+  scanMsg('Menyiapkan kamera…');
+  $('#scanCode').value = normCode($('#codeIn').value);
+  if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    scanMsg('📷 Kamera tidak bisa dibuka di sini (butuh HTTPS & browser yang mendukung).<br><br>Pakai aplikasi <b>Kamera</b> bawaan iPhone untuk scan QR, atau <b>ketik kode room</b> di bawah.', true);
+    return;
+  }
+  const libP = loadJsQR().catch(() => null);
+  try {
+    SC.stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } });
+  } catch (e) {
+    const n = e && e.name;
+    const msg = n === 'NotAllowedError' || n === 'SecurityError'
+      ? '🚫 <b>Akses kamera ditolak.</b><br>Untuk mengizinkan: tap ikon <b>“aA”</b> di address bar Safari → <b>Pengaturan Situs Web</b> → <b>Kamera: Izinkan</b>, lalu coba lagi.<br><br>Atau langsung <b>ketik kode room</b> (6 huruf di HP temanmu) di bawah.'
+      : n === 'NotFoundError' || n === 'OverconstrainedError'
+        ? '📷 Kamera tidak ditemukan di perangkat ini.<br>Silakan <b>ketik kode room</b> di bawah.'
+        : n === 'NotReadableError'
+          ? '📷 Kamera sedang dipakai aplikasi lain. Tutup aplikasi itu lalu coba lagi, atau <b>ketik kode room</b> di bawah.'
+          : '📷 Kamera tidak bisa dibuka (' + esc(n || 'error') + ').<br>Silakan <b>ketik kode room</b> di bawah.';
+    scanMsg(msg, true);
+    return;
+  }
+  if ($('#scanner').classList.contains('hidden')) { stopScanner(); return; }
+  const v = $('#scanVideo');
+  v.setAttribute('playsinline', ''); v.muted = true; v.srcObject = SC.stream;
+  try { await v.play(); } catch {}
+  const lib = await libP;
+  if (!lib && 'BarcodeDetector' in window) { try { SC.detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch {} }
+  if (!lib && !SC.detector) { scanMsg('Pembaca QR gagal dimuat (cek internet). Pakai <b>Kamera</b> bawaan iPhone, atau <b>ketik kode room</b> di bawah.', true); stopStream(); return; }
+  scanMsg('Arahkan kamera ke QR di HP temanmu');
+  SC.canvas = SC.canvas || document.createElement('canvas');
+  const tick = async () => {
+    if (!SC.stream) return;
+    SC.raf = requestAnimationFrame(tick);
+    const now = performance.now();
+    if (SC.busy || now - SC.last < 120 || v.readyState < 2 || !v.videoWidth) return;
+    SC.last = now; SC.busy = true;
+    try {
+      let text = '';
+      if (lib) {
+        const scale = Math.min(1, 800 / Math.max(v.videoWidth, v.videoHeight));
+        const w = Math.round(v.videoWidth * scale), h = Math.round(v.videoHeight * scale);
+        const c = SC.canvas; if (c.width !== w) c.width = w; if (c.height !== h) c.height = h;
+        const ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(v, 0, 0, w, h);
+        const res = lib(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'attemptBoth' });
+        if (res) text = res.data;
+      } else {
+        const r = await SC.detector.detect(v); if (r && r[0]) text = r[0].rawValue;
+      }
+      if (text) onScanned(text);
+    } catch (e) { console.warn('scan', e); }
+    SC.busy = false;
+  };
+  tick();
+}
+function onScanned(text) {
+  const code = codeFromQR(text);
+  if (!code) { scanMsg('QR terbaca, tapi bukan QR room HD Gallery. Coba QR lain / ketik kode.'); return; }
+  if (navigator.vibrate) navigator.vibrate(40);
+  stopScanner();
+  toast('QR terbaca: room ' + code);
+  setName($('#nameIn').value);
+  enterRoom(code);
+}
+function stopStream() { cancelAnimationFrame(SC.raf); SC.raf = 0; if (SC.stream) { SC.stream.getTracks().forEach((t) => t.stop()); SC.stream = null; } const v = $('#scanVideo'); if (v) v.srcObject = null; SC.busy = false; }
+function stopScanner() { stopStream(); $('#scanner').classList.add('hidden'); document.body.style.overflow = ''; }
+
 async function copyLink() {
   const url = shareUrl();
   try { await navigator.clipboard.writeText(url); toast('Link room disalin'); }
@@ -899,6 +1040,11 @@ $('#codeIn').addEventListener('input', (e) => { e.target.value = normCode(e.targ
 $('#codeIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#joinBtn').click(); });
 $('#joinBtn').onclick = () => { setName($('#nameIn').value); enterRoom($('#codeIn').value); };
 $('#resumeBtn').onclick = () => enterRoom(ls.get('hd.lastRoom', ''));
+$('#scanBtn').onclick = openScanner;
+$('#scanClose').onclick = stopScanner;
+$('#scanCode').addEventListener('input', (e) => { e.target.value = normCode(e.target.value); });
+$('#scanCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#scanJoin').click(); });
+$('#scanJoin').onclick = () => { const c = normCode($('#scanCode').value); if (c.length < 4) { toast('Ketik kode room (4–6 karakter)'); return; } stopScanner(); setName($('#nameIn').value); enterRoom(c); };
 $('#nameIn').addEventListener('change', (e) => setName(e.target.value));
 $('#copyBtn').onclick = copyLink; $('#qrBtn').onclick = openQR; $('#shareBtn').onclick = shareLink;
 $('#fileIn').addEventListener('change', (e) => { const files = [...e.target.files]; e.target.value = ''; onPick(files); });
@@ -918,10 +1064,12 @@ $('#vStage').addEventListener('touchend', (e) => {
   else if (dy > 110 && Math.abs(dy) > Math.abs(dx) * 1.5) closeViewer();
 }, { passive: true });
 document.addEventListener('keydown', (e) => {
+  if (!$('#scanner').classList.contains('hidden')) { if (e.key === 'Escape') stopScanner(); return; }
   if ($('#viewer').classList.contains('hidden')) { if (e.key === 'Escape') closeModal(); return; }
   if (e.key === 'Escape') closeViewer(); if (e.key === 'ArrowLeft') step(-1); if (e.key === 'ArrowRight') step(1);
 });
 document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && SC.stream) stopScanner();
   if (document.visibilityState !== 'visible' || !S.room) return;
   requestWake();
   // iPhone sering memutus koneksi saat Safari di background → sambung lagi otomatis
@@ -940,7 +1088,8 @@ window.__hd = {
   async sha(id) { const it = S.items.get(id); if (!it) return null; const h = await crypto.subtle.digest('SHA-256', await it.blob.arrayBuffer()); return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, '0')).join(''); },
   list() { return [...S.items.values()].map((i) => ({ id: i.id, name: i.name, size: i.size, type: i.type, mine: i.owner === S.uid, delivered: i.delivered.size })); },
   connected() { return openConns().length; },
-  role() { return S.isHost ? 'host' : 'guest'; }
+  role() { return S.isHost ? 'host' : 'guest'; },
+  shareUrl, codeFromQR
 };
 
 initHome();

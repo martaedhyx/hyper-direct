@@ -2,11 +2,12 @@
 
 Kirim foto & video **langsung HP ke HP** (WebRTC P2P), kualitas asli, tanpa server penyimpanan.
 
-**Live:** https://martaedhyx.github.io/hd-gallery/
+**Live:** https://martaedhyx.github.io/hyper-direct/
 
 ## Cara pakai
 1. HP A: buka link → **Buat Room** → kirim link / tunjukkan QR (atau sebutkan kode 6 huruf).
 2. HP B: buka link / scan QR / ketik kode → status jadi **Terhubung**.
+   (Di HP B juga bisa: **Gabung Room → Scan QR dari HP teman**, scanner kamera di dalam app.)
 3. Masing-masing tap **Pilih Foto / Video** → foto muncul di album teman → tap → **Simpan**.
 
 ## Teknis
