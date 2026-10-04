@@ -20,7 +20,7 @@
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.04-r4'; window.HD_VERSION = V;
+  var V = '2026.10.04-r5'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -252,6 +252,30 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .l-tag{position:relative;color:rgba(165,243,252,.8);font-size:12px;letter-spacing:.32em;font-weight:600;margin:0 0 44px;padding-left:.32em}
 .l-btn{position:relative;display:inline-flex;align-items:center;gap:10px;padding:15px 38px;border-radius:999px;border:1.5px solid rgba(34,211,238,.75);background:rgba(17,25,40,.55);color:#22d3ee;font-weight:800;font-size:15px;letter-spacing:.18em;box-shadow:0 0 22px -6px rgba(34,211,238,.6),inset 0 0 14px rgba(34,211,238,.08);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .15s,background .15s,color .15s}
 .l-btn:active{transform:scale(.96);background:rgba(8,51,68,.7);color:#fff}
+.l-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:none}
+.landing.fx{touch-action:none}
+.landing.fx .l-canvas{display:block}
+.landing.fx .stars,.landing.fx .stars2{display:none}
+.landing.fx .l-mascot .m-eye{animation:none}
+.l-flash{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 38%,rgba(255,255,255,.95) 0%,rgba(165,243,252,.55) 22%,rgba(14,116,144,0) 62%)}
+/* judul diketik huruf demi huruf (gradien per huruf diatur JS agar tetap menyambung) */
+.l-title.lt{background:none}
+.l-title .ch{display:inline-block;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;background-repeat:no-repeat,no-repeat}
+.l-title.typing .ch{opacity:0;transform:translateY(.14em) scale(.88)}
+.l-title.typing .ch.on{opacity:1;transform:none;transition:opacity .16s ease,transform .26s cubic-bezier(.2,1.5,.4,1)}
+.l-caret{position:absolute;width:.07em;height:.82em;background:#22d3ee;box-shadow:0 0 10px #22d3ee;border-radius:2px;animation:caret .8s steps(1) infinite;-webkit-text-fill-color:initial}
+@keyframes caret{0%{opacity:1}50%{opacity:0}}
+.landing.fx .l-tag{opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s ease}
+.landing.fx.typed .l-tag{opacity:1;transform:none}
+/* warp saat MULAI ditekan */
+.landing.warp{pointer-events:none}
+.landing.warp .l-mascot{animation:lwarp .8s cubic-bezier(.5,0,.75,.2) forwards}
+@keyframes lwarp{0%{transform:translateY(0)}18%{transform:translateY(10px) scale(1.06,.92)}100%{transform:translateY(-75vh) scale(.42,.6)}}
+.landing.warp .l-shadow{opacity:0;transition:opacity .2s}
+.landing.warp .l-title,.landing.warp .l-tag,.landing.fx.typed.warp .l-tag,.landing.warp .l-btn,.landing.warp .l-foot{opacity:0;transform:scale(.9) translateY(14px);transition:opacity .35s ease,transform .45s ease}
+.landing.warp .l-flash{animation:lflash .8s ease-in forwards}
+@keyframes lflash{0%,55%{opacity:0}100%{opacity:.9}}
+.landing.warp.out{transition:opacity .3s ease}
 .l-foot{position:absolute;left:0;right:0;bottom:calc(0px + 16px);bottom:calc(env(safe-area-inset-bottom) + 16px);font-size:11px;color:rgba(148,163,184,.6);letter-spacing:.08em}
 /* kompatibilitas browser lama */
 button{touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -269,7 +293,7 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 </head>
 <body>
 <section class="landing" id="landing" aria-label="Hyper Direct">
-  <div class="stars"></div><div class="stars2"></div><div class="l-glow"></div>
+  <div class="stars"></div><div class="stars2"></div><canvas class="l-canvas" id="lCanvas" aria-hidden="true"></canvas><div class="l-glow"></div><div class="l-flash"></div>
   <div class="l-mascot" role="img" aria-label="Maskot Hyper Direct">
     <svg viewBox="0 0 100 100" focusable="false">
       <defs>
@@ -280,15 +304,15 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
       <circle cx="50" cy="50" r="48.4" fill="none" stroke="rgba(15,23,42,.12)" stroke-width="1.2"/>
       <ellipse cx="30" cy="24" rx="15" ry="7" fill="#fff" opacity=".9" transform="rotate(-35 30 24)"/>
       <g clip-path="url(#mc2)">
-        <ellipse cx="53" cy="47" rx="6" ry="3.2" fill="#ff8fb1" opacity=".5" transform="rotate(-25 53 47)"/>
-        <ellipse cx="86" cy="42" rx="5" ry="2.8" fill="#ff8fb1" opacity=".5" transform="rotate(-25 86 42)"/>
-        <g transform="rotate(-25 60 30.5)"><rect class="m-eye" x="55" y="21" width="10" height="19" rx="5" fill="#111318"/></g>
-        <g transform="rotate(-25 80 26.5)"><rect class="m-eye" x="75.75" y="17.5" width="8.5" height="18" rx="4.25" fill="#111318"/></g>
+        <g id="lCheeks"><ellipse cx="53" cy="47" rx="6" ry="3.2" fill="#ff8fb1" opacity=".5" transform="rotate(-25 53 47)"/>
+        <ellipse cx="86" cy="42" rx="5" ry="2.8" fill="#ff8fb1" opacity=".5" transform="rotate(-25 86 42)"/></g>
+        <g id="lEyes"><g transform="rotate(-25 60 30.5)"><rect class="m-eye" x="55" y="21" width="10" height="19" rx="5" fill="#111318"/></g>
+        <g transform="rotate(-25 80 26.5)"><rect class="m-eye" x="75.75" y="17.5" width="8.5" height="18" rx="4.25" fill="#111318"/></g></g>
       </g>
     </svg>
   </div>
   <div class="l-shadow"></div>
-  <h1 class="l-title"><span>HYPER</span> <span>DIRECT</span></h1>
+  <h1 class="l-title" id="lTitle" aria-label="HYPER DIRECT"><span class="w">HYPER</span> <span class="w">DIRECT</span></h1>
   <p class="l-tag">BERBAGI FOTO HD LANGSUNG</p>
   <button type="button" class="l-btn" id="startBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>MULAI</button>
   <div class="l-foot">P2P · kualitas asli · tanpa server</div>
@@ -436,17 +460,24 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 'use strict';
 // ---------------- Konfigurasi ----------------
 const APP = 'hdgallery-v1';
-const APP_VERSION = '2026.10.04-r4';
+const APP_VERSION = '2026.10.04-r5';
 const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CHUNK = 64 * 1024;          // potongan 64 KB (termasuk header 4 byte)
 const SLAB = 1024 * 1024;         // baca file per 1 MB lalu dipotong 64 KB
 const HIGH = 1024 * 1024;         // backpressure: tunggu kalau bufferedAmount > 1 MB
 const LOW = 256 * 1024;           // lanjut kirim saat turun ke 256 KB
+// STUN: cari jalur langsung. TURN: relay cadangan bila jalur langsung gagal (mis. NAT operator seluler / CGNAT).
+// Data tetap terenkripsi DTLS end-to-end; relay hanya meneruskan paket terenkripsi.
+// Catatan: relay gratis PeerJS (eu-0/us-0.turn.peerjs.com) sudah dihentikan pengelolanya, jadi tidak dipakai lagi.
 const ICE = [
-  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
-  // cadangan relay publik PeerJS (data tetap terenkripsi DTLS end-to-end)
-  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' }
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+  { urls: 'stun:stun.cloudflare.com:3478' },
+  // freeTURN.net: gratis tanpa daftar (batas 2 Mbit/s per peer). UDP, TCP, dan TLS 5349 untuk jaringan yang memblokir UDP.
+  { urls: ['turn:freeturn.net:3478', 'turn:freeturn.net:3478?transport=tcp', 'turns:freeturn.net:5349'], username: 'free', credential: 'free' }
 ];
+// Opsional: URL API kredensial TURN (mis. akun gratis Metered: https://NAMA.metered.live/api/v1/turn/credentials?apiKey=KUNCI)
+// Kosong = hanya pakai server di atas. Bila diisi, server dari API ditambahkan.
+const TURN_API = '';
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -519,7 +550,10 @@ function refreshStatus() {
   if (!navigator.onLine) return setStatus('bad', 'Offline', 'HP sedang offline. Akan tersambung lagi otomatis saat internet kembali.');
   if (cs.length) {
     const names = cs.map((c) => S.names[c.uid] || 'Teman');
-    return setStatus('ok', 'Terhubung · ' + (names.length > 2 ? names.length + ' orang' : names.join(', ')));
+    const relay = cs.some((c) => c.path === 'relay'), direct = cs.some((c) => c.path === 'direct');
+    const via = relay ? ' · Lewat relay' : (direct ? ' · Langsung' : '');
+    return setStatus('ok', 'Terhubung · ' + (names.length > 2 ? names.length + ' orang' : names.join(', ')) + via,
+      relay ? 'Jalur langsung diblokir jaringan, jadi dikirim lewat server relay (tetap terenkripsi). Bisa lebih lambat — kalau bisa, pakai Wi-Fi yang sama.' : '');
   }
   if (typeof Peer === 'undefined') return setStatus('bad', 'Gagal memuat PeerJS', 'Cek koneksi internet lalu muat ulang halaman.');
   if (!S.peer || S.peer.disconnected || !S.peer.open) return setStatus('warn', S.everConnected ? 'Terputus · menyambung lagi…' : 'Menghubungkan…');
@@ -750,7 +784,7 @@ function startPeer(mode) {
   const code = S.room;
   // yang pertama masuk memegang ID "host" room; berikutnya jadi tamu & menyambung ke host
   const id = mode === 'host' ? hostId(code) : hostId(code) + '-' + rand(8);
-  const p = new Peer(id, { config: { iceServers: ICE }, debug: 0 });
+  const p = new Peer(id, { config: { iceServers: ICE.concat(S.extraIce || []) }, debug: 0 });
   S.peer = p; S.mode = mode; S.isHost = false;
   refreshStatus();
   p.on('open', () => {
@@ -788,6 +822,21 @@ function connectTo(pid) {
   const conn = S.peer.connect(pid, { reliable: true, serialization: 'raw' });
   if (conn) setupConn(conn);
 }
+// Jalur koneksi: 'direct' (langsung HP ke HP) atau 'relay' (lewat server TURN)
+async function pathType(C) {
+  const pc = C.conn && C.conn.peerConnection;
+  if (!pc || typeof pc.getStats !== 'function') return '';
+  const rep = await pc.getStats(); const by = {}; let pair = null;
+  rep.forEach((r) => { by[r.id] = r; });
+  rep.forEach((r) => { if (r.type === 'transport' && r.selectedCandidatePairId && by[r.selectedCandidatePairId]) pair = by[r.selectedCandidatePairId]; });
+  if (!pair) rep.forEach((r) => { if (!pair && r.type === 'candidate-pair' && r.state === 'succeeded' && (r.selected || r.nominated)) pair = r; });
+  if (!pair) return '';
+  const l = by[pair.localCandidateId], rr = by[pair.remoteCandidateId];
+  return (l && l.candidateType === 'relay') || (rr && rr.candidateType === 'relay') ? 'relay' : 'direct';
+}
+function checkPath(C) {
+  pathType(C).then((t) => { if (t && t !== C.path) { C.path = t; refreshStatus(); } }).catch(() => {});
+}
 function setupConn(conn) {
   const C = { conn, peerId: conn.peer, open: false, pending: true, uid: null, queue: [], rx: new Map(), wanted: new Set(), cur: null, pumping: false, lastSeen: Date.now() };
   S.conns.set(conn.connectionId, C);
@@ -798,6 +847,7 @@ function setupConn(conn) {
     const dc = conn.dataChannel;
     if (dc) { dc.bufferedAmountLowThreshold = LOW; try { dc.binaryType = 'arraybuffer'; } catch (_e) {} }
     sendJ(C, { t: 'hello', uid: S.uid, name: S.name, v: 1 });
+    setTimeout(() => checkPath(C), 1200);
     if (S.isHost) {
       const others = [...S.conns.values()].filter((x) => x !== C && x.open).map((x) => x.peerId);
       if (others.length) sendJ(C, { t: 'peers', ids: others });
@@ -1016,6 +1066,7 @@ setInterval(() => {
     if (!C.open) continue;
     if (Date.now() - C.lastSeen > (S.hbTimeout || 30000)) { try { C.conn.close(); } catch (_e) {} onClose(C); continue; }
     sendJ(C, { t: 'ping' });
+    checkPath(C);
   }
   if (S.room && S.peer && !S.peer.destroyed && !S.isHost && S.peer.open && !openConns().length && !S.retryT && ![...S.conns.values()].some((c) => c.pending)) connectTo(hostId(S.room));
 }, 5000);
@@ -1056,6 +1107,11 @@ function leaveRoom() {
   releaseWake();
   $('#room').classList.add('hidden'); $('#home').classList.remove('hidden');
   initHome();
+if (TURN_API && window.fetch) {
+  Promise.race([fetch(TURN_API).then((r) => r.json()), new Promise((_r, rej) => setTimeout(() => rej(new Error('timeout')), 4000))])
+    .then((j) => { const list = Array.isArray(j) ? j : (j && j.iceServers) || []; if (list.length) S.extraIce = list; })
+    .catch((e) => console.warn('turn api', e));
+}
 }
 function initHome() {
   const last = ls.get('hd.lastRoom', null);
@@ -1333,19 +1389,253 @@ window.__hd = {
   shareUrl, codeFromQR,
   restartPeer() { startPeer('host'); },
   stats: S.stats,
+  get fx() { return FX.st; },
+  pathType, ICE,
   visible() { return [...document.querySelectorAll('#allGrid .tile[data-id]')].map((e) => e.dataset.id); },
   partial() { return [...S.partial.values()].map((p) => ({ id: p.id, got: p.got, size: p.size })); }
 };
 
+// ===== Efek layar pembuka: bintang bergerak, judul diketik, mata maskot mengikuti jari, warp =====
+const FX = (() => {
+  const L = $('#landing'), cv = $('#lCanvas'), title = $('#lTitle');
+  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const st = { on: false, raf: 0, w: 0, h: 0, dpr: 1, cx: 0, cy: 0, stars: [], speed: 0.045, warpT0: 0, warping: false,
+    shoot: null, nextShoot: 0, look: { tx: 0, ty: 0, x: 0, y: 0, back: 0 }, blink: { t0: 0, next: 0, dbl: false },
+    letters: [], tw: 0, glint: -1, nextGlint: 0, typed: false, slowFrames: 0, frames: 0, last: 0 };
+  let ctx = null;
+  const eyesG = $('#lEyes'), cheeksG = $('#lCheeks');
+  const eyeRects = eyesG ? [...eyesG.querySelectorAll('rect')] : [];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  function size() {
+    const r = L.getBoundingClientRect();
+    st.w = Math.max(1, r.width); st.h = Math.max(1, r.height);
+    st.dpr = Math.min(window.devicePixelRatio || 1, st.lowEnd ? 1 : 1.5);
+    cv.width = Math.round(st.w * st.dpr); cv.height = Math.round(st.h * st.dpr);
+    if (ctx) ctx.setTransform(st.dpr, 0, 0, st.dpr, 0, 0);
+    const m = $('.l-mascot').getBoundingClientRect();
+    st.cx = m.width ? m.left + m.width / 2 - r.left : st.w / 2;
+    st.cy = m.height ? m.top + m.height / 2 - r.top : st.h * 0.4;
+    // jumlah bintang dibatasi supaya ringan di HP lama
+    const want = Math.min(st.lowEnd ? 80 : 160, Math.max(50, Math.round(st.w * st.h / 2300)));
+    while (st.stars.length < want) st.stars.push(newStar(true));
+    st.stars.length = want;
+    layoutLetters();
+  }
+  function newStar(any) {
+    return { x: rnd(-0.6, 0.6) * st.w, y: rnd(-0.6, 0.6) * st.h, z: any ? rnd(0.08, 1) : 1, p: rnd(0, 6.28), tw: rnd(1, 3), c: Math.random() < 0.22 ? '191,239,255' : '255,255,255' };
+  }
+  function proj(s, z) { return [st.cx + s.x / z, st.cy + s.y / z]; }
+
+  function drawStars(dt, t) {
+    ctx.clearRect(0, 0, st.w, st.h);
+    let sp = st.speed;
+    if (st.warping) { const k = Math.min(1, (t - st.warpT0) / 800); sp = 0.045 + 3.2 * k * k; }
+    const warpK = st.warping ? Math.min(1, (t - st.warpT0) / 800) : 0;
+    for (let i = 0; i < st.stars.length; i++) {
+      const s = st.stars[i];
+      const zPrev = s.z; s.z -= sp * dt;
+      if (s.z <= 0.03) { Object.assign(s, newStar(false)); continue; }
+      const q = proj(s, s.z);
+      if (q[0] < -40 || q[0] > st.w + 40 || q[1] < -40 || q[1] > st.h + 40) { Object.assign(s, newStar(false)); continue; }
+      const near = 1 - s.z;
+      let a = Math.min(1, near * 1.2 + 0.4) * Math.min(1, near / 0.08);
+      if (!st.warping) a *= 0.72 + 0.28 * Math.sin(t / 1000 * s.tw + s.p);
+      const r = 0.75 + near * 2;
+      if (warpK > 0.05) {
+        // garis memanjang (efek warp)
+        const tail = proj(s, Math.min(1, zPrev + sp * 0.05 + 0.02 * warpK));
+        ctx.strokeStyle = 'rgba(' + s.c + ',' + Math.min(1, a + 0.2) + ')';
+        ctx.lineWidth = Math.max(0.8, r * 0.9);
+        ctx.beginPath(); ctx.moveTo(tail[0], tail[1]); ctx.lineTo(q[0], q[1]); ctx.stroke();
+      } else {
+        ctx.fillStyle = 'rgba(' + s.c + ',' + a + ')';
+        ctx.fillRect(q[0] - r / 2, q[1] - r / 2, r, r);
+      }
+    }
+    // bintang jatuh sesekali
+    if (!st.warping && !st.shoot && t > st.nextShoot) {
+      const left = Math.random() < 0.5, ang = (left ? 205 : 335) * Math.PI / 180 + rnd(-0.12, 0.12);
+      const v = rnd(0.9, 1.25) * Math.max(st.w, 360);
+      st.shoot = { x: rnd(0.25, 0.85) * st.w * (left ? 1 : 0.8), y: rnd(0.03, 0.3) * st.h, vx: Math.cos(ang) * v * (left ? 1 : 1), vy: Math.abs(Math.sin(ang)) * v, t0: t, dur: rnd(650, 950), len: rnd(80, 140) };
+      if (!left) st.shoot.vx = Math.abs(st.shoot.vx);
+      st.nextShoot = t + rnd(3500, 8000);
+    }
+    if (st.shoot) {
+      const o = st.shoot, p = (t - o.t0) / o.dur;
+      if (p >= 1) st.shoot = null;
+      else {
+        const hx = o.x + o.vx * (t - o.t0) / 1000, hy = o.y + o.vy * (t - o.t0) / 1000;
+        const n = Math.sqrt(o.vx * o.vx + o.vy * o.vy), tx = hx - o.vx / n * o.len, ty = hy - o.vy / n * o.len;
+        const al = Math.sin(Math.PI * p);
+        const g = ctx.createLinearGradient(hx, hy, tx, ty);
+        g.addColorStop(0, 'rgba(255,255,255,' + al + ')'); g.addColorStop(0.3, 'rgba(165,243,252,' + al * 0.5 + ')'); g.addColorStop(1, 'rgba(165,243,252,0)');
+        ctx.strokeStyle = g; ctx.lineWidth = 1.7; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(tx, ty); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,' + al + ')'; ctx.beginPath(); ctx.arc(hx, hy, 1.6, 0, 6.283); ctx.fill();
+      }
+    }
+  }
+
+  // ---- mata: kedip berkala + melirik ke arah jari / pointer ----
+  function setBlink(sc) {
+    eyeRects.forEach((r) => {
+      const cx = +r.getAttribute('x') + +r.getAttribute('width') / 2, cy = +r.getAttribute('y') + +r.getAttribute('height') / 2;
+      if (sc >= 0.999) r.removeAttribute('transform');
+      else r.setAttribute('transform', 'translate(' + cx + ' ' + cy + ') scale(1 ' + sc.toFixed(3) + ') translate(' + (-cx) + ' ' + (-cy) + ')');
+    });
+  }
+  function eyes(dt, t) {
+    const lk = st.look;
+    if (lk.back && t > lk.back) { lk.tx = 0; lk.ty = 0; lk.back = 0; }
+    const k = reduce ? 1 : 1 - Math.exp(-dt * 11);
+    lk.x += (lk.tx - lk.x) * k; lk.y += (lk.ty - lk.y) * k;
+    if (eyesG) eyesG.setAttribute('transform', 'translate(' + lk.x.toFixed(2) + ' ' + lk.y.toFixed(2) + ')');
+    if (cheeksG) cheeksG.setAttribute('transform', 'translate(' + (lk.x * 0.45).toFixed(2) + ' ' + (lk.y * 0.45).toFixed(2) + ')');
+    const b = st.blink;
+    if (!b.next) b.next = t + rnd(1200, 2600);
+    if (t > b.next && !b.t0) b.t0 = t;
+    if (b.t0) {
+      const p = (t - b.t0) / 170;
+      if (p >= 1) { setBlink(1); b.t0 = 0; if (!b.dbl && Math.random() < 0.25) { b.dbl = true; b.next = t + 110; } else { b.dbl = false; b.next = t + rnd(2400, 5600); } }
+      else setBlink(Math.max(0.08, Math.abs(1 - 2 * p)));
+    }
+  }
+  function lookAt(px, py, hold) {
+    const m = $('.l-mascot').getBoundingClientRect(); if (!m.width) return;
+    const dx = px - (m.left + m.width / 2), dy = py - (m.top + m.height / 2);
+    const d = Math.sqrt(dx * dx + dy * dy) || 1, f = Math.min(1, d / 140);
+    const ux = dx / d * f, uy = dy / d * f;
+    // batas gerak mata di dalam bola (mata aslinya di kanan-atas)
+    st.look.tx = ux > 0 ? ux * 4 : ux * 9; st.look.ty = uy > 0 ? uy * 9 : uy * 3.2;
+    st.look.back = hold ? 0 : performance.now() + 1500;
+    if (reduce) eyes(0.016, performance.now());
+  }
+  function release() { st.look.back = performance.now() + 700; }
+
+  // ---- judul: diketik huruf demi huruf, lalu kilau ----
+  function splitTitle() {
+    title.classList.add('lt');
+    title.querySelectorAll('.w').forEach((w) => {
+      const txt = w.textContent; w.textContent = '';
+      for (const ch of txt) { const c = document.createElement('span'); c.className = 'ch'; c.textContent = ch; w.appendChild(c); }
+    });
+    st.letters = [...title.querySelectorAll('.ch')];
+  }
+  const BASEG = 'linear-gradient(90deg,#22d3ee 0%,#38bdf8 45%,#2563eb 100%)';
+  const GLINT = 'linear-gradient(100deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.95) 50%,rgba(255,255,255,0) 100%)';
+  function layoutLetters() {
+    if (!st.letters.length) return;
+    st.tw = title.clientWidth || st.w;
+    st.letters.forEach((c) => { c._x = c.offsetLeft; c._y = c.offsetTop; c.style.backgroundImage = GLINT + ',' + BASEG; c.style.backgroundSize = Math.round(st.tw * 0.32) + 'px 100%,' + st.tw + 'px 100%'; });
+    paintGlint();
+  }
+  function paintGlint() {
+    const g = st.glint;
+    st.letters.forEach((c) => { const gx = g < 0 ? -99999 : g - c._x - c._y * 0.35; c.style.backgroundPosition = gx.toFixed(1) + 'px 0,' + (-c._x) + 'px 0'; });
+  }
+  function caretAt(i) {
+    let c = title.querySelector('.l-caret');
+    if (i < 0) { if (c) c.remove(); return; }
+    if (!c) { c = document.createElement('span'); c.className = 'l-caret'; title.appendChild(c); }
+    const l = st.letters[i];
+    if (!l) { c.style.left = (st.letters[0] ? st.letters[0].offsetLeft : 0) + 'px'; c.style.top = (st.letters[0] ? st.letters[0].offsetTop : 0) + 'px'; return; }
+    c.style.left = (l.offsetLeft + l.offsetWidth + 3) + 'px'; c.style.top = (l.offsetTop + l.offsetHeight * 0.12) + 'px';
+  }
+  function typeTitle() {
+    if (reduce) { st.typed = true; L.classList.add('typed'); title.classList.add('typed'); return; }
+    title.classList.add('typing');
+    let i = 0; caretAt(-2);
+    const step = () => {
+      if (!st.on && !st.warping) return;
+      if (i >= st.letters.length) {
+        setTimeout(() => { caretAt(-1); st.typed = true; title.classList.add('typed'); L.classList.add('typed'); st.nextGlint = performance.now() + 150; }, 520);
+        return;
+      }
+      st.letters[i].classList.add('on'); caretAt(i);
+      const ch = st.letters[i].textContent, nextIsNewWord = st.letters[i + 1] && st.letters[i + 1].parentNode !== st.letters[i].parentNode;
+      i++; setTimeout(step, nextIsNewWord ? 210 : (ch === ' ' ? 120 : 85));
+    };
+    setTimeout(step, 260);
+  }
+  function glint(t) {
+    if (!st.typed || reduce || st.warping) return;
+    if (!st.glintT0 && t > st.nextGlint) st.glintT0 = t;
+    if (st.glintT0) {
+      const p = (t - st.glintT0) / 950;
+      if (p >= 1) { st.glint = -1; st.glintT0 = 0; st.nextGlint = t + rnd(4500, 7000); }
+      else st.glint = -st.tw * 0.4 + p * st.tw * 1.8;
+      paintGlint();
+    }
+  }
+
+  function frame(t) {
+    if (!st.on) return;
+    const dt = Math.min(0.05, st.last ? (t - st.last) / 1000 : 0.016); st.last = t;
+    // adaptif: kalau HP lambat, kurangi bintang
+    st.frames++; if (dt > 0.034) st.slowFrames++;
+    if (st.frames === 90 && st.slowFrames > 45 && !st.lowEnd) { st.lowEnd = true; size(); }
+    drawStars(dt, t); eyes(dt, t); glint(t);
+    st.raf = requestAnimationFrame(frame);
+  }
+  function start() {
+    if (st.on) return; st.on = true; st.last = 0;
+    if (reduce) { drawStars(0, 0); eyes(0.016, performance.now()); return; }
+    st.raf = requestAnimationFrame(frame);
+  }
+  function stop() { st.on = false; st.warping = false; if (st.raf) cancelAnimationFrame(st.raf); st.raf = 0; }
+
+  function init() {
+    try { ctx = cv.getContext && cv.getContext('2d'); } catch (_e) { ctx = null; }
+    if (!ctx || !L || L.classList.contains('hidden')) return false;
+    st.lowEnd = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || (navigator.deviceMemory && navigator.deviceMemory <= 2) || false;
+    L.classList.add('fx');
+    splitTitle(); size();
+    st.nextShoot = performance.now() + rnd(1800, 3200);
+    const fontsReady = document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 900))]) : Promise.resolve();
+    fontsReady.then(() => { layoutLetters(); typeTitle(); });
+    window.addEventListener('resize', () => { if (st.on || reduce) { size(); if (reduce) drawStars(0, 0); } });
+    if (window.PointerEvent) {
+      L.addEventListener('pointerdown', (e) => lookAt(e.clientX, e.clientY, e.pointerType !== 'mouse'), { passive: true });
+      L.addEventListener('pointermove', (e) => lookAt(e.clientX, e.clientY, e.pointerType !== 'mouse' && e.buttons > 0), { passive: true });
+      L.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') release(); }, { passive: true });
+      L.addEventListener('pointercancel', release, { passive: true });
+    } else {
+      const tp = (e) => { const t0 = e.touches && e.touches[0]; if (t0) lookAt(t0.clientX, t0.clientY, true); };
+      L.addEventListener('touchstart', tp, { passive: true }); L.addEventListener('touchmove', tp, { passive: true });
+      L.addEventListener('touchend', release, { passive: true });
+      L.addEventListener('mousemove', (e) => lookAt(e.clientX, e.clientY, false), { passive: true });
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (L.classList.contains('hidden')) return;
+      if (document.visibilityState === 'hidden') stop(); else start();
+    });
+    start();
+    return true;
+  }
+  // MULAI → warp singkat (~0.8 dtk) lalu masuk aplikasi. Return false bila efek tidak aktif.
+  function warp(done) {
+    if (!L.classList.contains('fx') || reduce || !st.on) return false;
+    if (st.warping) return true;
+    st.warping = true; st.warpT0 = performance.now(); st.shoot = null;
+    st.look.tx = 0; st.look.ty = -3; st.look.back = 0;
+    L.classList.add('warp');
+    setTimeout(done, 800);
+    return true;
+  }
+  return { init, stop, warp, st };
+})();
+
 function hideLanding(instant) {
   const l = $('#landing'); if (!l || l.classList.contains('hidden')) return;
-  if (instant) { l.classList.add('hidden'); return; }
-  l.classList.add('out'); setTimeout(() => l.classList.add('hidden'), 460);
+  if (instant) { l.classList.add('hidden'); FX.stop(); return; }
+  l.classList.add('out'); setTimeout(() => { l.classList.add('hidden'); FX.stop(); }, 460);
 }
-$('#startBtn').onclick = () => hideLanding(false);
+$('#startBtn').onclick = () => { if (!FX.warp(() => hideLanding(false))) hideLanding(false); };
 initHome();
 const qRoom = normCode(new URLSearchParams(location.search).get('room'));
 if (qRoom.length >= 4) { hideLanding(true); enterRoom(qRoom); }   // join via QR/link: langsung masuk, tanpa splash
+else { try { FX.init(); } catch (e) { console.warn('fx', e); } }
 window.__hdReady = true;   // dicek oleh BOOT script
 })();
 </script>
