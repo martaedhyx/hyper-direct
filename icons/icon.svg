@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs><radialGradient id="bg" cx="50%" cy="22%" r="85%"><stop offset="0" stop-color="#16305a"/><stop offset=".5" stop-color="#0a1324"/><stop offset="1" stop-color="#050913"/></radialGradient>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#22d3ee" stop-opacity=".30"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="19.8" stdDeviation="22.0" flood-color="#000" flood-opacity=".55"/></filter></defs>
+<rect width="512" height="512" rx="110" fill="url(#bg)"/>
+<circle cx="256" cy="256" r="343.4" fill="url(#glow)"/>
+<g filter="url(#sh)" transform="translate(35.8 35.8) scale(4.4032)"><defs><radialGradient id="mg" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#eef1f6"/><stop offset=".82" stop-color="#cfd5de"/><stop offset="1" stop-color="#aeb6c2"/></radialGradient><clipPath id="mc"><circle cx="50" cy="50" r="47.5"/></clipPath></defs>
+<circle cx="50" cy="50" r="49" fill="url(#mg)"/><circle cx="50" cy="50" r="48.4" fill="none" stroke="rgba(15,23,42,.12)" stroke-width="1.2"/>
+<ellipse cx="30" cy="24" rx="15" ry="7" fill="#fff" opacity=".9" transform="rotate(-35 30 24)"/>
+<g clip-path="url(#mc)"><ellipse cx="53" cy="47" rx="6" ry="3.2" fill="#ff8fb1" opacity=".5" transform="rotate(-25 53 47)"/><ellipse cx="86" cy="42" rx="5" ry="2.8" fill="#ff8fb1" opacity=".5" transform="rotate(-25 86 42)"/>
+<g transform="rotate(-25 60 30.5)"><rect x="55" y="21" width="10" height="19" rx="5" fill="#111318"/></g><g transform="rotate(-25 80 26.5)"><rect x="75.75" y="17.5" width="8.5" height="18" rx="4.25" fill="#111318"/></g></g></g></svg>

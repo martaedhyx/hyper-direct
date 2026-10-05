@@ -5,22 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a1324">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Hyper Direct">
+<meta name="format-detection" content="telephone=no">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Hyper Direct">
-<meta name="description" content="HD Gallery – Hyper-Direct P2P Sharing. Kirim foto & video langsung HP ke HP, kualitas asli, tanpa server.">
+<meta name="description" content="Hyper Direct (HD Gallery). Kirim foto & video langsung HP ke HP, kualitas asli, tanpa server.">
 <title>Hyper Direct</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='g' cx='36%25' cy='30%25' r='75%25'%3E%3Cstop offset='0' stop-color='%23fff'/%3E%3Cstop offset='.45' stop-color='%23eef1f6'/%3E%3Cstop offset='.82' stop-color='%23cfd5de'/%3E%3Cstop offset='1' stop-color='%23aeb6c2'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='49' fill='url(%23g)'/%3E%3Cellipse cx='30' cy='24' rx='15' ry='7' fill='%23fff' opacity='.9' transform='rotate(-35 30 24)'/%3E%3Crect x='55' y='21' width='10' height='19' rx='5' fill='%23111318' transform='rotate(-25 60 30.5)'/%3E%3Crect x='75.75' y='17.5' width='8.5' height='18' rx='4.25' fill='%23111318' transform='rotate(-25 80 26.5)'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.04-r5'; window.HD_VERSION = V;
+  var V = '2026.10.05-r6'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -55,6 +61,12 @@
     if (b) b.addEventListener('click', function () { if (!window.__hdReady) { var l = document.getElementById('landing'); if (l) l.style.display = 'none'; } });
     setTimeout(function () { if (!window.__hdReady) box('Aplikasi gagal dimuat di browser ini. Perbarui Chrome (atau pakai Chrome/Safari terbaru), lalu buka lagi link-nya.'); }, 5000);
   });
+  // service worker (agar bisa dipasang sebagai aplikasi); gagal = diabaikan
+  try {
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') && !/[?&]nosw=1/.test(location.search)) {
+      window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js', { scope: './' })['catch'](function (e) { window.__swError = String(e); }); });
+    }
+  } catch (e) {}
   // cache-busting: GitHub Pages menyimpan cache ~10 menit; kalau ada versi baru, muat ulang sekali
   try {
     if (window.fetch && /github\.io$/.test(location.hostname)) {
@@ -277,6 +289,15 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 @keyframes lflash{0%,55%{opacity:0}100%{opacity:.9}}
 .landing.warp.out{transition:opacity .3s ease}
 .l-foot{position:absolute;left:0;right:0;bottom:calc(0px + 16px);bottom:calc(env(safe-area-inset-bottom) + 16px);font-size:11px;color:rgba(148,163,184,.6);letter-spacing:.08em}
+/* petunjuk pasang aplikasi (kecil, bisa ditutup) */
+.install-hint{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px}
+.install-hint.hidden{display:none}
+.ih-main{display:inline-flex;align-items:center;gap:7px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.28);color:#a5f3fc;font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px}
+.ih-x{background:none;border:0;color:var(--muted);font-size:20px;line-height:1;padding:6px 8px}
+.ios-steps{margin:6px 0 14px;padding-left:20px;line-height:1.7;color:var(--text)}
+.ios-steps b{color:#a5f3fc}
+/* mode aplikasi (standalone): status bar transparan → beri ruang aman */
+@media (display-mode: standalone){html,body{overscroll-behavior-y:none}.landing{padding-top:calc(env(safe-area-inset-top) + 32px)}}
 /* kompatibilitas browser lama */
 button{touch-action:manipulation;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .acard>*,.acard svg{pointer-events:none}
@@ -360,6 +381,7 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
         <div class="nm">Gabung Room</div><div class="ct">Pakai kode teman</div>
       </button>
     </div>
+    <div class="install-hint hidden" id="installHint"><button type="button" class="ih-main" id="installBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>Pasang di Layar Utama</button><button type="button" class="ih-x" id="installX" aria-label="Tutup">×</button></div>
     <div class="card hidden" id="joinBox" style="margin-top:14px">
       <div class="small muted" style="margin-bottom:8px">Masukkan kode room dari temanmu</div>
       <div class="row">
@@ -460,7 +482,7 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 'use strict';
 // ---------------- Konfigurasi ----------------
 const APP = 'hdgallery-v1';
-const APP_VERSION = '2026.10.04-r5';
+const APP_VERSION = '2026.10.05-r6';
 const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CHUNK = 64 * 1024;          // potongan 64 KB (termasuk header 4 byte)
 const SLAB = 1024 * 1024;         // baca file per 1 MB lalu dipotong 64 KB
@@ -1107,11 +1129,6 @@ function leaveRoom() {
   releaseWake();
   $('#room').classList.add('hidden'); $('#home').classList.remove('hidden');
   initHome();
-if (TURN_API && window.fetch) {
-  Promise.race([fetch(TURN_API).then((r) => r.json()), new Promise((_r, rej) => setTimeout(() => rej(new Error('timeout')), 4000))])
-    .then((j) => { const list = Array.isArray(j) ? j : (j && j.iceServers) || []; if (list.length) S.extraIce = list; })
-    .catch((e) => console.warn('turn api', e));
-}
 }
 function initHome() {
   const last = ls.get('hd.lastRoom', null);
@@ -1390,7 +1407,7 @@ window.__hd = {
   restartPeer() { startPeer('host'); },
   stats: S.stats,
   get fx() { return FX.st; },
-  pathType, ICE,
+  pathType, ICE, INSTALL: () => INSTALL,
   visible() { return [...document.querySelectorAll('#allGrid .tile[data-id]')].map((e) => e.dataset.id); },
   partial() { return [...S.partial.values()].map((p) => ({ id: p.id, got: p.got, size: p.size })); }
 };
@@ -1632,6 +1649,45 @@ function hideLanding(instant) {
   l.classList.add('out'); setTimeout(() => { l.classList.add('hidden'); FX.stop(); }, 460);
 }
 $('#startBtn').onclick = () => { if (!FX.warp(() => hideLanding(false))) hideLanding(false); };
+// ---- Pasang di Layar Utama ----
+const INSTALL = (() => {
+  let deferred = null;
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = isIOS && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(ua);
+  const standalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
+  const dismissed = () => { try { return localStorage.getItem('hd.installDismissed') === '1'; } catch (_e) { return false; } };
+  function show(on) { const h = $('#installHint'); if (h) h.classList.toggle('hidden', !on || standalone() || dismissed()); }
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e; show(true); });
+  window.addEventListener('appinstalled', () => { deferred = null; show(false); toast('Hyper Direct terpasang di layar utama ✓'); });
+  $('#installX').onclick = () => { try { localStorage.setItem('hd.installDismissed', '1'); } catch (_e) {} show(false); };
+  $('#installBtn').onclick = () => {
+    if (deferred) {
+      const d = deferred; deferred = null;
+      d.prompt();
+      Promise.resolve(d.userChoice).then((c) => { if (c && c.outcome === 'accepted') show(false); }).catch(() => {});
+      return;
+    }
+    if (isIOS) {
+      openModal(`<h3 style="text-align:center">Pasang di iPhone</h3>
+        <ol class="ios-steps">${isSafari ? '' : '<li>Buka halaman ini di <b>Safari</b>.</li>'}
+          <li>Tap tombol <b>Bagikan</b> (kotak dengan panah ↑) di bawah.</li>
+          <li>Pilih <b>Tambah ke Layar Utama</b>, lalu tap <b>Tambah</b>.</li></ol>
+        <button type="button" class="btn primary block" id="iosOk">Mengerti</button>`);
+      $('#iosOk').onclick = closeModal;
+      return;
+    }
+    toast('Buka menu browser (⋮) lalu pilih "Instal aplikasi" / "Tambahkan ke layar utama".');
+  };
+  // iPhone tidak punya beforeinstallprompt → tampilkan petunjuk singkat
+  if (isIOS) show(true);
+  return { show, isIOS, standalone, get deferred() { return deferred; } };
+})();
+if (TURN_API && window.fetch) {
+  Promise.race([fetch(TURN_API).then((r) => r.json()), new Promise((_r, rej) => setTimeout(() => rej(new Error('timeout')), 4000))])
+    .then((j) => { const list = Array.isArray(j) ? j : (j && j.iceServers) || []; if (list.length) S.extraIce = list; })
+    .catch((e) => console.warn('turn api', e));
+}
 initHome();
 const qRoom = normCode(new URLSearchParams(location.search).get('room'));
 if (qRoom.length >= 4) { hideLanding(true); enterRoom(qRoom); }   // join via QR/link: langsung masuk, tanpa splash
