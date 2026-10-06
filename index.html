@@ -482,24 +482,29 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 'use strict';
 // ---------------- Konfigurasi ----------------
 const APP = 'hdgallery-v1';
-const APP_VERSION = '2026.10.06-r7';
+const APP_VERSION = '2026.10.06-r8';
 const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CHUNK = 64 * 1024;          // potongan 64 KB (termasuk header 4 byte)
 const SLAB = 1024 * 1024;         // baca file per 1 MB lalu dipotong 64 KB
 const HIGH = 1024 * 1024;         // backpressure: tunggu kalau bufferedAmount > 1 MB
 const LOW = 256 * 1024;           // lanjut kirim saat turun ke 256 KB
-// STUN: cari jalur langsung. TURN: relay cadangan bila jalur langsung gagal (mis. NAT operator seluler / CGNAT).
-// Data tetap terenkripsi DTLS end-to-end; relay hanya meneruskan paket terenkripsi.
-// Catatan: relay gratis PeerJS (eu-0/us-0.turn.peerjs.com) sudah dihentikan pengelolanya, jadi tidak dipakai lagi.
+// ICE: coba jalur langsung lebih dulu, lalu TURN bila NAT/firewall/CGNAT menghalangi.
+// DataChannel WebRTC tetap terenkripsi DTLS; TURN hanya meneruskan paket terenkripsi.
+// Open Relay (Metered) menyediakan TURN pada port 80/443 + UDP/TCP/TLS, sehingga
+// lebih cocok untuk HP dengan jaringan seluler atau Wi-Fi yang ketat.
 const ICE = [
-  // STUN publik untuk mencoba jalur langsung terlebih dahulu.
-  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
-  // TURN resmi PeerJS Cloud. Penting: custom iceServers menggantikan default PeerJS,
-  // jadi server TURN bawaan harus dicantumkan kembali agar HP di balik CGNAT/symmetric NAT
-  // tetap bisa tersambung dari jaringan seluler/Wi-Fi yang berbeda.
-  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
-  // Cadangan TURN publik; beberapa jaringan seluler memblokir UDP, jadi sediakan TCP/TLS juga.
-  { urls: ['turn:freeturn.net:3478', 'turn:freeturn.net:3478?transport=tcp', 'turns:freeturn.net:5349'], username: 'free', credential: 'free' }
+  { urls: [
+    'stun:stun.l.google.com:19302',
+    'stun:stun1.l.google.com:19302',
+    'stun:stun.cloudflare.com:3478',
+    'stun:openrelay.metered.ca:80'
+  ] },
+  { urls: [
+    'turn:openrelay.metered.ca:80',
+    'turn:openrelay.metered.ca:443',
+    'turn:openrelay.metered.ca:443?transport=tcp',
+    'turns:openrelay.metered.ca:443?transport=tcp'
+  ], username: 'openrelayproject', credential: 'openrelayproject' }
 ];
 // Opsional: URL API kredensial TURN (mis. akun gratis Metered: https://NAMA.metered.live/api/v1/turn/credentials?apiKey=KUNCI)
 // Kosong = hanya pakai server di atas. Bila diisi, server dari API ditambahkan.
@@ -866,7 +871,7 @@ function checkPath(C) {
 function setupConn(conn) {
   const C = { conn, peerId: conn.peer, open: false, pending: true, uid: null, queue: [], rx: new Map(), wanted: new Set(), cur: null, pumping: false, lastSeen: Date.now() };
   S.conns.set(conn.connectionId, C);
-  const openTimer = setTimeout(() => { if (!C.open && !C.closed) { S.failCount++; try { conn.close(); } catch (_e) {} onClose(C); } }, 20000);
+  const openTimer = setTimeout(() => { if (!C.open && !C.closed) { S.failCount++; try { conn.close(); } catch (_e) {} onClose(C); } }, 35000);
   conn.on('open', () => {
     clearTimeout(openTimer);
     C.open = true; C.pending = false; C.lastSeen = Date.now();
@@ -884,7 +889,7 @@ function setupConn(conn) {
   conn.on('error', (e) => console.warn('conn error', e && e.type, e && e.message));
   try {
     const pc = conn.peerConnection;
-    if (pc) pc.addEventListener('iceconnectionstatechange', () => { if (pc.iceConnectionState === 'failed') { S.failCount++; try { conn.close(); } catch (_e) {} onClose(C); } });
+    if (pc) pc.addEventListener('iceconnectionstatechange', () => { if (pc.iceConnectionState === 'failed') { S.failCount++; setTimeout(() => { if (!C.closed && C.open && pc.iceConnectionState === 'failed') { try { conn.close(); } catch (_e) {} onClose(C); } }, 3000); } });
   } catch (_e) {}
 }
 function onClose(C, silent) {
