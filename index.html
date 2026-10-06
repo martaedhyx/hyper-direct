@@ -26,7 +26,7 @@
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.06-r9'; window.HD_VERSION = V;
+  var V = '2026.10.06-r10'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -493,21 +493,28 @@ const LOW = 256 * 1024;           // lanjut kirim saat turun ke 256 KB
 // Open Relay (Metered) menyediakan TURN pada port 80/443 + UDP/TCP/TLS, sehingga
 // lebih cocok untuk HP dengan jaringan seluler atau Wi-Fi yang ketat.
 const ICE = [
+  // STUN: jalur langsung jika NAT mengizinkan.
   { urls: [
     'stun:stun.l.google.com:19302',
     'stun:stun1.l.google.com:19302',
-    'stun:stun.cloudflare.com:3478',
-    'stun:openrelay.metered.ca:80'
+    'stun:stun.cloudflare.com:3478'
   ] },
+  // TURN: fallback relay untuk HP yang berada di CGNAT / symmetric NAT / firewall ketat.
+  // Kredensial ini adalah konfigurasi publik contoh yang digunakan PeerJS; TURN API
+  // milik sendiri tetap dapat ditambahkan lewat TURN_API di bawah.
   { urls: [
-    'turn:openrelay.metered.ca:80',
-    'turn:openrelay.metered.ca:443',
-    'turn:openrelay.metered.ca:443?transport=tcp',
-    'turns:openrelay.metered.ca:443?transport=tcp'
-  ], username: 'openrelayproject', credential: 'openrelayproject' }
+    'turn:eu-0.turn.peerjs.com:3478',
+    'turn:us-0.turn.peerjs.com:3478'
+  ], username: 'peerjs', credential: 'peerjsp' },
+  { urls: [
+    'turn:eu-0.turn.peerjs.com:443?transport=tcp',
+    'turn:us-0.turn.peerjs.com:443?transport=tcp',
+    'turns:eu-0.turn.peerjs.com:443?transport=tcp',
+    'turns:us-0.turn.peerjs.com:443?transport=tcp'
+  ], username: 'peerjs', credential: 'peerjsp' }
 ];
-// Opsional: URL API kredensial TURN (mis. akun gratis Metered: https://NAMA.metered.live/api/v1/turn/credentials?apiKey=KUNCI)
-// Kosong = hanya pakai server di atas. Bila diisi, server dari API ditambahkan.
+// Opsional: endpoint yang mengembalikan array iceServers TURN milik sendiri.
+// Jangan pernah menaruh secret key provider di frontend.
 const TURN_API = '';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -815,7 +822,7 @@ function startPeer(mode) {
   const code = S.room;
   // yang pertama masuk memegang ID "host" room; berikutnya jadi tamu & menyambung ke host
   const id = mode === 'host' ? hostId(code) : hostId(code) + '-' + rand(8);
-  const p = new Peer(id, { config: { iceServers: ICE.concat(S.extraIce || []) }, debug: 0 });
+  const p = new Peer(id, { config: { iceServers: ICE.concat(S.extraIce || []), iceTransportPolicy: 'all', sdpSemantics: 'unified-plan' }, debug: 0 });
   S.peer = p; S.mode = mode; S.isHost = false;
   refreshStatus();
   p.on('open', () => {
@@ -871,7 +878,7 @@ function checkPath(C) {
 function setupConn(conn) {
   const C = { conn, peerId: conn.peer, open: false, pending: true, uid: null, queue: [], rx: new Map(), wanted: new Set(), cur: null, pumping: false, lastSeen: Date.now() };
   S.conns.set(conn.connectionId, C);
-  const openTimer = setTimeout(() => { if (!C.open && !C.closed) { S.failCount++; try { conn.close(); } catch (_e) {} onClose(C); } }, 35000);
+  const openTimer = setTimeout(() => { if (!C.open && !C.closed) { S.failCount++; try { conn.close(); } catch (_e) {} onClose(C); } }, 18000);
   conn.on('open', () => {
     clearTimeout(openTimer);
     C.open = true; C.pending = false; C.lastSeen = Date.now();
@@ -900,7 +907,7 @@ function setupConn(conn) {
             try { conn.close(); } catch (_e) {}
             onClose(C);
           }
-        }, 2200);
+        }, 1200);
       } else if (st === 'disconnected') {
         // disconnected bisa pulih sendiri; beri waktu sebelum memicu reconnect.
         setTimeout(() => {
@@ -908,7 +915,7 @@ function setupConn(conn) {
             try { conn.close(); } catch (_e) {}
             onClose(C);
           }
-        }, 8000);
+        }, 5000);
       }
     });
   } catch (_e) {}
