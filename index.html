@@ -26,7 +26,7 @@
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.05-r6'; window.HD_VERSION = V;
+  var V = '2026.10.06-r9'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -889,7 +889,28 @@ function setupConn(conn) {
   conn.on('error', (e) => console.warn('conn error', e && e.type, e && e.message));
   try {
     const pc = conn.peerConnection;
-    if (pc) pc.addEventListener('iceconnectionstatechange', () => { if (pc.iceConnectionState === 'failed') { S.failCount++; setTimeout(() => { if (!C.closed && C.open && pc.iceConnectionState === 'failed') { try { conn.close(); } catch (_e) {} onClose(C); } }, 3000); } });
+    if (pc) pc.addEventListener('iceconnectionstatechange', () => {
+      const st = pc.iceConnectionState;
+      if (st === 'failed') {
+        S.failCount++;
+        // ICE failed sebelum DataChannel open = jangan tunggu openTimer 35 detik.
+        // Tutup koneksi gagal setelah jeda singkat agar tamu/host segera mencoba jalur ICE baru.
+        setTimeout(() => {
+          if (!C.closed && pc.iceConnectionState === 'failed') {
+            try { conn.close(); } catch (_e) {}
+            onClose(C);
+          }
+        }, 2200);
+      } else if (st === 'disconnected') {
+        // disconnected bisa pulih sendiri; beri waktu sebelum memicu reconnect.
+        setTimeout(() => {
+          if (!C.closed && pc.iceConnectionState === 'disconnected') {
+            try { conn.close(); } catch (_e) {}
+            onClose(C);
+          }
+        }, 8000);
+      }
+    });
   } catch (_e) {}
 }
 function onClose(C, silent) {
