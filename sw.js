@@ -3,7 +3,7 @@
    - version.json: tidak pernah disentuh (cek versi & reload otomatis tetap jalan)
    - ikon & manifest: cache-first
    - lintas domain (PeerJS, sinyal 0.peerjs.com, CDN, Google Fonts): tidak pernah disentuh / dicache */
-var SW_VERSION = '2026.10.05-r6';
+var SW_VERSION = '2026.10.06-r8';
 var CACHE = 'hd-shell-' + SW_VERSION;
 var STATIC = ['icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/favicon-32.png', 'apple-touch-icon.png', 'manifest.webmanifest'];
 var SCOPE = self.registration ? self.registration.scope : self.location.href.replace(/sw\.js.*$/, '');
