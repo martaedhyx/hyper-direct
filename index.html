@@ -26,7 +26,7 @@
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.06-r11'; window.HD_VERSION = V;
+  var V = '2026.10.07-r12'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -84,8 +84,8 @@
   } catch (e) {}
 })();
 </script>
-<!-- PeerJS 1.4.7: build ES2015, jalan di browser Android lama (1.5.x butuh ES2020) -->
-<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+<!-- PeerJS 1.5.5: build ES2015, jalan di browser Android lama (1.5.x butuh ES2020) -->
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
 :root{--bg:#0a1324;--bg2:#0d1830;--card:#121d33;--card2:#17243f;--line:#1f2c47;--cyan:#22d3ee;--blue:#3b82f6;--text:#e6edf7;--muted:#8a97ae;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--violet:#a78bfa}
@@ -482,7 +482,7 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 'use strict';
 // ---------------- Konfigurasi ----------------
 const APP = 'hdgallery-v1';
-const APP_VERSION = '2026.10.06-r11';
+const APP_VERSION = '2026.10.07-r12';
 const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CHUNK = 64 * 1024;          // potongan 64 KB (termasuk header 4 byte)
 const SLAB = 1024 * 1024;         // baca file per 1 MB lalu dipotong 64 KB
@@ -858,7 +858,7 @@ function startPeer(mode) {
 function connectTo(pid) {
   if (!S.peer || S.peer.destroyed || !S.peer.open || pid === S.peer.id) return;
   for (const c of S.conns.values()) if (c.peerId === pid && (c.open || c.pending)) return;
-  const conn = S.peer.connect(pid, { reliable: true, serialization: 'raw' });
+  const conn = S.peer.connect(pid, { reliable: true, serialization: 'binary' });
   if (conn) setupConn(conn);
 }
 // Jalur koneksi: 'direct' (langsung HP ke HP) atau 'relay' (lewat server TURN)
