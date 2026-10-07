@@ -26,7 +26,7 @@
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.07-r12'; window.HD_VERSION = V;
+  var V = '2026.10.07-r16'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -482,7 +482,7 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 'use strict';
 // ---------------- Konfigurasi ----------------
 const APP = 'hdgallery-v1';
-const APP_VERSION = '2026.10.07-r12';
+const APP_VERSION = '2026.10.07-r16';
 const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CHUNK = 64 * 1024;          // potongan 64 KB (termasuk header 4 byte)
 const SLAB = 1024 * 1024;         // baca file per 1 MB lalu dipotong 64 KB
@@ -505,8 +505,18 @@ const ICE = [
   { urls: [
     'turn:eu-0.turn.peerjs.com:3478',
     'turn:us-0.turn.peerjs.com:3478',
-    'turn:0.peerjs.com:3478'
+    'turn:0.peerjs.com:3478',
+    'turn:openrelay.metered.ca:80',
+    'turn:openrelay.metered.ca:443',
+    'turn:openrelay.metered.ca:443?transport=tcp'
   ], username: 'peerjs', credential: 'peerjsp' },
+  // Relay publik tambahan untuk jaringan seluler/CGNAT.
+  // Kredensial Open Relay yang dipublikasikan untuk penggunaan relay bersama.
+  { urls: [
+    'turn:openrelay.metered.ca:80',
+    'turn:openrelay.metered.ca:443',
+    'turn:openrelay.metered.ca:443?transport=tcp'
+  ], username: 'openrelayproject', credential: 'openrelayproject' },
   { urls: [
     'turn:eu-0.turn.peerjs.com:443?transport=tcp',
     'turn:us-0.turn.peerjs.com:443?transport=tcp',
