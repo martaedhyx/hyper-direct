@@ -26,7 +26,7 @@
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.08-r18'; window.HD_VERSION = V;
+  var V = '2026.10.08-r19'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -482,7 +482,7 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 'use strict';
 // ---------------- Konfigurasi ----------------
 const APP = 'hdgallery-v1';
-const APP_VERSION = '2026.10.08-r18';
+const APP_VERSION = '2026.10.08-r19';
 const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CHUNK = 64 * 1024;          // potongan 64 KB (termasuk header 4 byte)
 const SLAB = 1024 * 1024;         // baca file per 1 MB lalu dipotong 64 KB
@@ -584,7 +584,7 @@ function baseUrl() {
   if (/(^|\.)github\.io$/i.test(location.hostname)) return CANONICAL;
   return location.origin + location.pathname.replace(/index\.html$/i, '');
 }
-function shareUrl() { return baseUrl() + '?room=' + S.room; }
+function shareUrl() { return baseUrl() + '?room=' + S.room + '&join=1'; }
 function openConns() { return [...S.conns.values()].filter((c) => c.open && c.uid); }
 
 function setStatus(kind, text, hint = '') {
@@ -1165,7 +1165,7 @@ setInterval(() => {
 
 // ---------------- Room flow ----------------
 function normCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); }
-async function enterRoom(code) {
+async function enterRoom(code, role) {
   code = normCode(code);
   if (code.length < 4) { toast('Kode room minimal 4 karakter'); return; }
   S.room = code; S.album = null; S.failCount = 0; S.everConnected = false; S.backoff = 1500; S.relayMode = false; S.relayTried = false;
@@ -1188,7 +1188,7 @@ async function enterRoom(code) {
       addItem({ id: r.id, owner: r.owner, ownerName: r.ownerName, name: r.name, type: r.type, size: r.size, ts: r.ts, rts: r.rts, unshared: r.unshared, blob: r.blob }, false);
     });
   }
-  startPeer('host');
+  startPeer(role === 'guest' ? 'guest' : 'host');
 }
 function leaveRoom() {
   destroyPeer();
@@ -1759,8 +1759,10 @@ if (TURN_API && window.fetch) {
     .catch((e) => console.warn('turn api', e));
 }
 initHome();
-const qRoom = normCode(new URLSearchParams(location.search).get('room'));
-if (qRoom.length >= 4) { hideLanding(true); enterRoom(qRoom); }   // join via QR/link: langsung masuk, tanpa splash
+const qParams = new URLSearchParams(location.search);
+const qRoom = normCode(qParams.get('room'));
+const qRole = qParams.get('join') === '1' ? 'guest' : 'host';
+if (qRoom.length >= 4) { hideLanding(true); enterRoom(qRoom, qRole); }   // join via QR/link: langsung masuk, tanpa splash
 else { try { FX.init(); } catch (e) { console.warn('fx', e); } }
 window.__hdReady = true;   // dicek oleh BOOT script
 })();
