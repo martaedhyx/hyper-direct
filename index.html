@@ -88,17 +88,17 @@
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
-:root{--bg:#0a1324;--bg2:#0f1d35;--card:#101f38;--card2:#142946;--line:#213a60;--cyan:#22d3ee;--blue:#3b82f6;--text:#fff7ed;--muted:#b8a28f;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#fb7185;--violet:#c084fc}
+:root{--bg:#0a1324;--bg2:#0d1830;--card:#121d33;--card2:#17243f;--line:#1f2c47;--cyan:#22d3ee;--blue:#3b82f6;--text:#e6edf7;--muted:#8a97ae;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--violet:#a78bfa}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
-body{background:radial-gradient(1200px 600px at 100% -10%,rgba(251,146,60,.08),transparent 60%),radial-gradient(900px 500px at -20% 10%,rgba(234,88,12,.06),transparent 60%),var(--bg);background-attachment:fixed}
+body{background:radial-gradient(1200px 600px at 100% -10%,rgba(34,211,238,.07),transparent 60%),radial-gradient(900px 500px at -20% 10%,rgba(59,130,246,.06),transparent 60%),var(--bg);background-attachment:fixed}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;-webkit-appearance:none;appearance:none}
 input{font:inherit}
 .hidden{display:none!important}
 .wrap{max-width:540px;margin:0 auto;padding:calc(0px + 18px) 18px calc(0px + 48px);padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 48px)}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brand{display:flex;align-items:center;gap:11px;min-width:0}
-.title{font-size:27px;font-weight:800;color:var(--cyan);letter-spacing:-.4px;line-height:1.08;text-shadow:0 0 22px rgba(251,146,60,.28)}
+.title{font-size:27px;font-weight:800;color:var(--cyan);letter-spacing:-.4px;line-height:1.08;text-shadow:0 0 22px rgba(34,211,238,.25)}
 .sub{color:var(--muted);font-size:13px;margin-top:3px;letter-spacing:.1px}
 .gear{flex:none;width:46px;height:46px;border-radius:15px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:#cbd5e1;transition:transform .15s,background .15s}
 .gear:active{transform:scale(.94);background:var(--card2)}
@@ -259,7 +259,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 @keyframes lfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 .l-shadow{width:90px;width:clamp(72px,22vw,104px);height:12px;margin:10px auto 0;border-radius:50%;background:rgba(34,211,238,.35);filter:blur(7px);animation:lshadow 4.2s ease-in-out infinite}
 @keyframes lshadow{0%,100%{transform:scaleX(1);opacity:.65}50%{transform:scaleX(.7);opacity:.32}}
-.l-title{position:relative;margin:30px 0 10px;font-family:'Orbitron','Arial Black','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:2.6rem;font-size:clamp(2.15rem,11.2vw,4.6rem);line-height:1.1;letter-spacing:.04em;background:linear-gradient(90deg,#fb923c 0%,#f97316 45%,#ea580c 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(6,182,212,.55))}
+.l-title{position:relative;margin:30px 0 10px;font-family:'Orbitron','Arial Black','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:2.6rem;font-size:clamp(2.15rem,11.2vw,4.6rem);line-height:1.1;letter-spacing:.04em;background:linear-gradient(90deg,#22d3ee 0%,#38bdf8 45%,#2563eb 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(6,182,212,.55))}
 .l-title span{display:inline-block}
 .l-tag{position:relative;color:rgba(165,243,252,.8);font-size:12px;letter-spacing:.32em;font-weight:600;margin:0 0 44px;padding-left:.32em}
 .l-btn{position:relative;display:inline-flex;align-items:center;gap:10px;padding:15px 38px;border-radius:999px;border:1.5px solid rgba(34,211,238,.75);background:rgba(17,25,40,.55);color:#22d3ee;font-weight:800;font-size:15px;letter-spacing:.18em;box-shadow:0 0 22px -6px rgba(34,211,238,.6),inset 0 0 14px rgba(34,211,238,.08);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .15s,background .15s,color .15s}
@@ -318,14 +318,14 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
   <div class="l-mascot" role="img" aria-label="Maskot Hyper Direct">
     <svg viewBox="0 0 100 100" focusable="false">
       <defs>
-        <radialGradient id="mg2" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#fed7aa"/><stop offset=".82" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></radialGradient>
+        <radialGradient id="mg2" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#eef1f6"/><stop offset=".82" stop-color="#cfd5de"/><stop offset="1" stop-color="#aeb6c2"/></radialGradient>
         <clipPath id="mc2"><circle cx="50" cy="50" r="47.5"/></clipPath>
       </defs>
       <circle cx="50" cy="50" r="49" fill="url(#mg2)"/>
       <circle cx="50" cy="50" r="48.4" fill="none" stroke="rgba(15,23,42,.12)" stroke-width="1.2"/>
       <ellipse cx="30" cy="24" rx="15" ry="7" fill="#fff" opacity=".9" transform="rotate(-35 30 24)"/>
       <g clip-path="url(#mc2)">
-        <g id="lCheeks"><ellipse cx="53" cy="47" rx="6" ry="3.2" fill="#67e8f9" opacity=".7" transform="rotate(-25 53 47)"/>
+        <g id="lCheeks"><ellipse cx="53" cy="47" rx="6" ry="3.2" fill="#ff8fb1" opacity=".5" transform="rotate(-25 53 47)"/>
         <ellipse cx="86" cy="42" rx="5" ry="2.8" fill="#ff8fb1" opacity=".5" transform="rotate(-25 86 42)"/></g>
         <g id="lEyes"><g transform="rotate(-25 60 30.5)"><rect class="m-eye" x="55" y="21" width="10" height="19" rx="5" fill="#111318"/></g>
         <g transform="rotate(-25 80 26.5)"><rect class="m-eye" x="75.75" y="17.5" width="8.5" height="18" rx="4.25" fill="#111318"/></g></g>
