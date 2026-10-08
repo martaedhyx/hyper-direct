@@ -26,7 +26,7 @@
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.08-r19'; window.HD_VERSION = V;
+  var V = '2026.10.08-r20'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -482,7 +482,7 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 'use strict';
 // ---------------- Konfigurasi ----------------
 const APP = 'hdgallery-v1';
-const APP_VERSION = '2026.10.08-r19';
+const APP_VERSION = '2026.10.08-r20';
 const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CHUNK = 64 * 1024;          // potongan 64 KB (termasuk header 4 byte)
 const SLAB = 1024 * 1024;         // baca file per 1 MB lalu dipotong 64 KB
@@ -542,7 +542,7 @@ const S = {
   name: ls.get('hd.name', ''),
   cache: ls.get('hd.cache', true),
   names: ls.get('hd.names', {}),
-  room: null, peer: null, mode: null, isHost: false,
+  room: null, peer: null, mode: null, role: null, isHost: false,
   conns: new Map(), items: new Map(), incoming: new Map(), tx: new Map(),
   tomb: new Set(), tidSeq: 0,
   partial: new Map(),                     // id -> transfer yang terputus (dilanjutkan dari offset)
@@ -1167,11 +1167,12 @@ setInterval(() => {
 function normCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); }
 async function enterRoom(code, role) {
   code = normCode(code);
+  role = role === 'guest' ? 'guest' : (role === 'host' ? 'host' : (S.role || 'host'));
   if (code.length < 4) { toast('Kode room minimal 4 karakter'); return; }
-  S.room = code; S.album = null; S.failCount = 0; S.everConnected = false; S.backoff = 1500; S.relayMode = false; S.relayTried = false;
+  S.room = code; S.role = role; S.album = null; S.failCount = 0; S.everConnected = false; S.backoff = 1500; S.relayMode = false; S.relayTried = false;
   S.tomb = new Set(ls.get('hd.tomb.' + code, []));
   ls.set('hd.lastRoom', code);
-  history.replaceState(null, '', location.pathname + '?room=' + code);
+  history.replaceState(null, '', location.pathname + '?room=' + code + (role === 'guest' ? '&join=1' : ''));
   $('#home').classList.add('hidden'); $('#room').classList.remove('hidden');
   $('#albumView').classList.add('hidden'); $('#albumsSec').classList.remove('hidden');
   $('#roomCode').textContent = code;
@@ -1393,7 +1394,7 @@ function onScanned(text) {
   stopScanner();
   toast('QR terbaca: room ' + code);
   setName($('#nameIn').value);
-  enterRoom(code);
+  enterRoom(code, 'guest');
 }
 function stopStream() { cancelAnimationFrame(SC.raf); SC.raf = 0; if (SC.stream) { SC.stream.getTracks().forEach((t) => t.stop()); SC.stream = null; } const v = $('#scanVideo'); if (v) v.srcObject = null; SC.busy = false; }
 function stopScanner() { stopStream(); $('#scanner').classList.add('hidden'); document.body.style.overflow = ''; }
@@ -1422,7 +1423,7 @@ $('#scanBtn').onclick = openScanner;
 $('#scanClose').onclick = stopScanner;
 $('#scanCode').addEventListener('input', (e) => { e.target.value = normCode(e.target.value); });
 $('#scanCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#scanJoin').click(); });
-$('#scanJoin').onclick = () => { const c = normCode($('#scanCode').value); if (c.length < 4) { toast('Ketik kode room (4–6 karakter)'); return; } stopScanner(); setName($('#nameIn').value); enterRoom(c); };
+$('#scanJoin').onclick = () => { const c = normCode($('#scanCode').value); if (c.length < 4) { toast('Ketik kode room (4–6 karakter)'); return; } stopScanner(); setName($('#nameIn').value); enterRoom(c, 'guest'); };
 $('#nameIn').addEventListener('change', (e) => setName(e.target.value));
 $('#copyBtn').onclick = copyLink; $('#qrBtn').onclick = openQR; $('#shareBtn').onclick = shareLink;
 $('#fileIn').addEventListener('change', (e) => { const files = [...e.target.files]; e.target.value = ''; onPick(files); });
@@ -1457,12 +1458,12 @@ document.addEventListener('visibilitychange', () => {
   for (const C of S.conns.values()) C.lastSeen = Date.now();
   requestWake();
   // iPhone sering memutus koneksi saat Safari di background → sambung lagi otomatis
-  if (!S.peer || S.peer.destroyed) startPeer('host');
+  if (!S.peer || S.peer.destroyed) startPeer(S.role || 'host');
   else if (S.peer.disconnected) { try { S.peer.reconnect(); } catch (_e) { startPeer('host'); } }
   else if (!S.isHost && !openConns().length) connectTo(hostId(S.room));
   render();
 });
-window.addEventListener('online', () => { if (S.room) { S.backoff = 1500; if (!S.peer || S.peer.destroyed || S.peer.disconnected) startPeer('host'); } render(); });
+window.addEventListener('online', () => { if (S.room) { S.backoff = 1500; if (!S.peer || S.peer.destroyed || S.peer.disconnected) startPeer(S.role || 'host'); } render(); });
 window.addEventListener('offline', render);
 window.addEventListener('beforeunload', (e) => { if ([...S.tx.values()].some((r) => r.state === 'run')) { e.preventDefault(); e.returnValue = ''; } });
 
@@ -1474,7 +1475,7 @@ window.__hd = {
   connected() { return openConns().length; },
   role() { return S.isHost ? 'host' : 'guest'; },
   shareUrl, codeFromQR,
-  restartPeer() { startPeer('host'); },
+  restartPeer() { startPeer(S.role || 'host'); },
   stats: S.stats,
   get fx() { return FX.st; },
   pathType, ICE, INSTALL: () => INSTALL,
