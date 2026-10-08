@@ -26,7 +26,7 @@
 <script>
 /* BOOT (ES5 murni) - jalan bahkan di browser Android lama. Menampilkan error, polyfill, cek versi. */
 (function () {
-  var V = '2026.10.08-r17'; window.HD_VERSION = V;
+  var V = '2026.10.08-r18'; window.HD_VERSION = V;
   function box(msg) {
     try {
       var d = document.getElementById('hdErr');
@@ -831,7 +831,7 @@ function startPeer(mode) {
   if (typeof Peer === 'undefined') { refreshStatus(); return; }
   destroyPeer();
   const code = S.room;
-  // yang pertama masuk memegang ID "host" room; berikutnya jadi tamu & menyambung ke host
+  // Kedua perangkat boleh mulai bersamaan: satu menjadi host, yang lain otomatis menjadi guest.
   const id = mode === 'host' ? hostId(code) : hostId(code) + '-' + rand(8);
   const p = new Peer(id, { config: { iceServers: ICE.concat(S.extraIce || []), iceTransportPolicy: S.relayMode ? 'relay' : 'all', sdpSemantics: 'unified-plan' }, debug: 1 });
   S.peer = p; S.mode = mode; S.isHost = false;
@@ -839,30 +839,41 @@ function startPeer(mode) {
   p.on('open', () => {
     if (S.peer !== p) return;
     S.isHost = mode === 'host'; S.backoff = 1500;
-    if (!S.isHost) connectTo(hostId(code));
+    if (!S.isHost) {
+      setStatus('warn', 'Mencari teman', 'Menyambungkan ke room…');
+      connectTo(hostId(code));
+    } else {
+      setStatus('warn', 'Menunggu teman', 'Room siap menerima teman…');
+    }
     refreshStatus();
   });
   p.on('connection', (conn) => { if (S.peer === p) setupConn(conn); });
   p.on('disconnected', () => {
     if (S.peer !== p || p.destroyed) return;
     refreshStatus();
-    retry(() => { if (S.peer === p && !p.destroyed && p.disconnected) { try { p.reconnect(); } catch (_e) { startPeer('host'); } } });
+    retry(() => { if (S.peer === p && !p.destroyed && p.disconnected) { try { p.reconnect(); } catch (_e) { startPeer(mode); } } }, 800);
   });
   p.on('error', (err) => {
     if (S.peer !== p) return;
     const t = err && err.type;
     if (t !== 'unavailable-id') console.warn('peer error', t, err && err.message);
-    if (t === 'unavailable-id' && mode === 'host') { startPeer('guest'); return; }
+    if (t === 'unavailable-id' && mode === 'host') {
+      // ID host sudah dipakai teman: langsung menjadi guest, tanpa menunggu retry.
+      startPeer('guest');
+      return;
+    }
     if (t === 'peer-unavailable') {
-      // host sudah tidak ada → ambil alih jadi host, teman lain akan menyambung ke kita
-      if (!S.isHost && !openConns().length) retry(() => startPeer('host'), 600 + Math.random() * 900);
+      // Host belum siap atau baru berganti peran: ulangi koneksi beberapa kali.
+      if (!S.isHost && !openConns().length) retry(() => {
+        if (S.peer === p && !p.destroyed && p.open) connectTo(hostId(code));
+      }, 700);
       return;
     }
     if (t === 'browser-incompatible') { setStatus('bad', 'Browser tidak mendukung WebRTC', 'Pakai Safari / Chrome versi terbaru.'); return; }
     if (t === 'webrtc') { S.failCount++; refreshStatus(); return; }
     if (t === 'disconnected') return;
     refreshStatus();
-    retry(() => startPeer('host'));
+    retry(() => startPeer(mode), 900);
   });
 }
 function connectTo(pid) {
