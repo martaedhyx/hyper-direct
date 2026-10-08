@@ -88,7 +88,7 @@
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
-:root{--bg:#0a1324;--bg2:#0d1830;--card:#121d33;--card2:#17243f;--line:#1f2c47;--cyan:#22d3ee;--blue:#3b82f6;--text:#e6edf7;--muted:#8a97ae;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--violet:#a78bfa}
+:root{--bg:#0a1324;--bg2:#0d1830;--card:#121d33;--card2:#17243f;--line:#1f2c47;--cyan:#22d3ee;--blue:#3b82f6;--text:#e6edf7;--muted:#8a97ae;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--violet:#a78bfa}.hd1-face{--bg:#0a1324;--bg2:#0d1830;--card:#121d33;--card2:#17243f;--line:#1f2c47;--cyan:#22d3ee;--blue:#3b82f6;--text:#e6edf7;--muted:#8a97ae;--green:#34d399;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;--violet:#a78bfa}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 body{background:radial-gradient(1200px 600px at 100% -10%,rgba(34,211,238,.07),transparent 60%),radial-gradient(900px 500px at -20% 10%,rgba(59,130,246,.06),transparent 60%),var(--bg);background-attachment:fixed}
@@ -310,9 +310,16 @@ button:focus-visible{outline:2px solid rgba(34,211,238,.75);outline-offset:2px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (min-width:700px){.grid3{grid-template-columns:repeat(4,1fr)}}
+
+/* HYPER DIRECT 1 FACE — visual only, engine untouched */
+body.hd1-face{background:radial-gradient(900px 520px at 50% -12%,rgba(34,211,238,.12),transparent 62%),radial-gradient(700px 500px at -15% 35%,rgba(59,130,246,.10),transparent 62%),#0a1324}
+.hd1-face .title{color:#22d3ee;text-shadow:0 0 24px rgba(34,211,238,.32)}
+.hd1-face .mascot{filter:drop-shadow(0 3px 5px rgba(0,0,0,.45)) drop-shadow(0 0 10px rgba(34,211,238,.30))}
+.hd1-face .l-title{filter:drop-shadow(0 0 18px rgba(34,211,238,.18))}
+.hd1-face .l-btn{box-shadow:0 8px 28px -10px rgba(34,211,238,.72)}
 </style>
 </head>
-<body>
+<body class="hd1-face">
 <section class="landing" id="landing" aria-label="Hyper Direct">
   <div class="stars"></div><div class="stars2"></div><canvas class="l-canvas" id="lCanvas" aria-hidden="true"></canvas><div class="l-glow"></div><div class="l-flash"></div>
   <div class="l-mascot" role="img" aria-label="Maskot Hyper Direct">
