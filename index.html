@@ -549,7 +549,7 @@ const S = {
   unseen: new Map(),                      // owner uid -> jumlah file baru belum dilihat
   retries: new Map(), stats: { resumed: 0 },
   album: null, viewList: [], viewIdx: -1,
-  failCount: 0, retryT: null, backoff: 1500, wake: null, everConnected: false
+  failCount: 0, retryT: null, backoff: 1500, wake: null, everConnected: false, relayMode: false, relayTried: false
 };
 const hostId = (code) => `${APP}-${code}`;
 
@@ -833,7 +833,7 @@ function startPeer(mode) {
   const code = S.room;
   // yang pertama masuk memegang ID "host" room; berikutnya jadi tamu & menyambung ke host
   const id = mode === 'host' ? hostId(code) : hostId(code) + '-' + rand(8);
-  const p = new Peer(id, { config: { iceServers: ICE.concat(S.extraIce || []), iceTransportPolicy: 'all', sdpSemantics: 'unified-plan' }, debug: 1 });
+  const p = new Peer(id, { config: { iceServers: ICE.concat(S.extraIce || []), iceTransportPolicy: S.relayMode ? 'relay' : 'all', sdpSemantics: 'unified-plan' }, debug: 1 });
   S.peer = p; S.mode = mode; S.isHost = false;
   refreshStatus();
   p.on('open', () => {
@@ -911,23 +911,25 @@ function setupConn(conn) {
       const st = pc.iceConnectionState;
       if (st === 'failed') {
         S.failCount++;
-        console.warn('ICE failed', C.peerId, 'failCount=', S.failCount);
-        // ICE failed sebelum DataChannel open = jangan tunggu openTimer 35 detik.
-        // Tutup koneksi gagal setelah jeda singkat agar tamu/host segera mencoba jalur ICE baru.
-        setTimeout(() => {
-          if (!C.closed && pc.iceConnectionState === 'failed') {
-            // Jaringan seluler <-> Wi-Fi kadang butuh waktu lebih lama untuk
-            // menyelesaikan ICE/TURN. Jangan langsung memutus jalur pada 1,2 dtk.
-            // Beri browser kesempatan melakukan ICE restart/relay selection.
-            try { pc.restartIce && pc.restartIce(); } catch (_e) {}
-            setTimeout(() => {
-              if (!C.closed && pc.iceConnectionState === 'failed') {
-                try { conn.close(); } catch (_e) {}
-                onClose(C);
-              }
-            }, 7000);
-          }
-        }, 3500);
+        console.warn('ICE failed', C.peerId, 'failCount=', S.failCount, 'relay=', S.relayMode);
+        // restartIce() saja tidak cukup di PeerJS: setelah restart perlu
+        // renegosiasi SDP. Jadi untuk percobaan kedua kita benar-benar
+        // membuat Peer/DataConnection baru dengan TURN-only (relay).
+        if (!S.relayMode && !S.relayTried) {
+          S.relayTried = true;
+          S.relayMode = true;
+          const retryMode = S.isHost ? 'host' : 'guest';
+          setTimeout(() => {
+            if (S.room && S.relayMode) startPeer(retryMode);
+          }, 900);
+        } else {
+          setTimeout(() => {
+            if (!C.closed && pc.iceConnectionState === 'failed') {
+              try { conn.close(); } catch (_e) {}
+              onClose(C);
+            }
+          }, 3500);
+        }
       } else if (st === 'disconnected') {
         // disconnected bisa pulih sendiri; beri waktu sebelum memicu reconnect.
         setTimeout(() => {
