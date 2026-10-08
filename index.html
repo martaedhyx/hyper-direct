@@ -916,10 +916,18 @@ function setupConn(conn) {
         // Tutup koneksi gagal setelah jeda singkat agar tamu/host segera mencoba jalur ICE baru.
         setTimeout(() => {
           if (!C.closed && pc.iceConnectionState === 'failed') {
-            try { conn.close(); } catch (_e) {}
-            onClose(C);
+            // Jaringan seluler <-> Wi-Fi kadang butuh waktu lebih lama untuk
+            // menyelesaikan ICE/TURN. Jangan langsung memutus jalur pada 1,2 dtk.
+            // Beri browser kesempatan melakukan ICE restart/relay selection.
+            try { pc.restartIce && pc.restartIce(); } catch (_e) {}
+            setTimeout(() => {
+              if (!C.closed && pc.iceConnectionState === 'failed') {
+                try { conn.close(); } catch (_e) {}
+                onClose(C);
+              }
+            }, 7000);
           }
-        }, 1200);
+        }, 3500);
       } else if (st === 'disconnected') {
         // disconnected bisa pulih sendiri; beri waktu sebelum memicu reconnect.
         setTimeout(() => {
