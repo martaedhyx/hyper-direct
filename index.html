@@ -866,7 +866,15 @@ function startPeer(mode) {
   const code = S.room;
   // Kedua perangkat boleh mulai bersamaan: satu menjadi host, yang lain otomatis menjadi guest.
   const id = mode === 'host' ? hostId(code) : hostId(code) + '-' + rand(8);
-  const p = new Peer(id, { config: { iceServers: ICE.concat(S.extraIce || []), iceTransportPolicy: S.relayMode ? 'relay' : 'all', sdpSemantics: 'unified-plan' }, debug: 1 });
+  // Gunakan PeerServer cloud secara eksplisit agar kedua perangkat memakai signaling endpoint yang sama.
+  const p = new Peer(id, {
+    host: '0.peerjs.com',
+    port: 443,
+    path: '/',
+    secure: true,
+    config: { iceServers: ICE.concat(S.extraIce || []), iceTransportPolicy: S.relayMode ? 'relay' : 'all', sdpSemantics: 'unified-plan' },
+    debug: 1
+  });
   S.peer = p; S.mode = mode; S.isHost = false;
   refreshStatus();
   p.on('open', () => {
