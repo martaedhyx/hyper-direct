@@ -935,7 +935,7 @@ function setupConn(conn) {
   S.conns.set(conn.connectionId, C);
   // Timeout koneksi dipercepat; jika jalur langsung macet, coba relay otomatis.
   const openTimer = setTimeout(() => {
-    if (C.open || C.closed || !S.room || S.peer !== conn.provider) {
+    if (C.open || C.closed || !S.room) {
       if (!C.open && !C.closed) { try { conn.close(); } catch (_e) {} onClose(C); }
       return;
     }
